@@ -1,4 +1,4 @@
-DATA DUMP: 2025-12-23T10:23:29.235Z
+DATA DUMP: 2025-12-23T13:12:21.931Z
 
 
 
@@ -7,31 +7,36 @@ FILE: src\app\companions\page.js
 ==================================================
 
 "use client";
+import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
 
-// Configurazione Categorie
-const COMPANION_CATS = [
-    { 
-        id: 'all', 
-        label: 'ALL COMPANIONS', 
-        filter: () => true,
-        subFilters: [
-             { id: 'sentinel', label: 'SENTINELS', filter: i => i.category === 'Sentinels' },
-             { id: 'pet', label: 'BEASTS', filter: i => i.category === 'Pets' }, // Kubrow/Kavat
-             { id: 'robotic', label: 'HOUNDS/MOA', filter: i => i.type && (i.type.includes('Hound') || i.type.includes('MOA')) }
-        ]
+const COMPANION_CATEGORIES = [
+    {
+        id: 'all',
+        label: 'ALL',
+        filter: (item) => item.category === 'Sentinels' // O 'Pets' se il file li include
     },
-    { id: 'sentinels', label: 'SENTINELS ONLY', filter: i => i.category === 'Sentinels' },
-    { id: 'pets', label: 'BEASTS ONLY', filter: i => i.category === 'Pets' },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => item.category === 'Sentinels' && !item.name.includes('Prime')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => item.category === 'Sentinels' && item.name.includes('Prime')
+    }
 ];
 
 export default function Page() {
     return (
-        <CodexListPage 
-            filesToLoad={['Sentinels.json', 'Pets.json']} 
-            pageTitle="COMPANIONS" 
-            customCategories={COMPANION_CATS}
-        />
+        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Sentinels...</div>}>
+            <CodexListPage 
+                filesToLoad={['Sentinels.json']} 
+                pageTitle="COMPANIONS" 
+                customCategories={COMPANION_CATEGORIES}
+            />
+        </Suspense>
     );
 }
 
@@ -86,385 +91,334 @@ FILE: src\app\globals.css
   --font-roboto: "Roboto Condensed", sans-serif;
 }
 
-/* 1. RESET */
 * { box-sizing: border-box; padding: 0; margin: 0; }
+
 html, body {
   height: 100%; width: 100%; background-color: var(--bg-deep); 
   color: var(--text-main); font-family: var(--font-roboto); overflow: hidden;
 }
 
-/* =========================================
-   2. HOMEPAGE (LANDING)
-   ========================================= */
+/* Scrollbars Universali */
+div::-webkit-scrollbar { width: 6px; }
+div::-webkit-scrollbar-track { background: #050505; }
+div::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+div::-webkit-scrollbar-thumb:hover { background: #555; }
+
+==================================================
+FILE: src\app\homepage.css
+==================================================
+
+/* LAYOUT BASE */
 .landing-page {
   height: 100vh; width: 100vw;
-  background: radial-gradient(circle at center, #1a1a20 0%, #050505 90%);
-  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  background: #050505;
+  position: relative; 
+  display: flex; flex-direction: column; 
+  align-items: center; justify-content: center;
+  overflow: hidden; /* Blocca scroll pagina intera */
 }
+
+/* SFONDO TECNICO */
 .landing-page::before {
   content: ""; position: absolute; inset: 0;
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
   pointer-events: none; z-index: 0;
 }
+
+/* VIGNETTATURA AI BORDI */
+.landing-page::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, #000 90%);
+  z-index: 1; pointer-events: none;
+}
+
 .landing-content {
-  position: relative; z-index: 2; height: 100%; width: 100%;
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  position: relative; z-index: 10;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; 
+  align-items: center; justify-content: center;
 }
+
+/* TITOLO E HEADER */
+.landing-header {
+  margin-bottom: 20px; /* Ridotto margine per dare spazio alle card */
+  text-align: center;
+  animation: fadeInDown 1s ease-out;
+  flex-shrink: 0; /* Impedisce che il titolo si schiacci */
+}
+
 .landing-title {
-  font-size: 70px; font-weight: 900; letter-spacing: 15px; color: #fff;
-  text-transform: uppercase; margin: 0;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-  background: linear-gradient(to bottom, #fff, #999);
+  font-size: 60px; /* Leggermente più piccolo per stare nello schermo */
+  font-weight: 900; 
+  color: #fff; text-transform: uppercase; 
+  letter-spacing: 10px; line-height: 1;
+  margin: 0;
+  background: linear-gradient(to bottom, #ffffff 0%, #888888 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
 }
+
 .landing-subtitle {
-  font-size: 13px; color: var(--gold); letter-spacing: 6px; text-transform: uppercase;
-  margin-top: 15px; font-weight: bold; text-shadow: 0 0 10px var(--gold-glow);
+  font-size: 12px; color: var(--gold); 
+  letter-spacing: 6px; text-transform: uppercase; 
+  margin-top: 10px; font-weight: 700;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  display: flex; align-items: center; justify-content: center; gap: 15px;
 }
-.cards-scroll-container {
-  width: 100%; padding: 20px 0; display: flex; justify-content: center;
-  overflow-x: auto; scrollbar-width: none;
+.landing-subtitle::before, .landing-subtitle::after {
+  content: ""; height: 1px; width: 40px; background: var(--gold); opacity: 0.5;
 }
-.cards-row { display: flex; gap: 25px; padding: 0 50px; align-items: center; }
 
+/* --- GRIGLIA CARDS (MODIFICATO PER FIT SCREEN) --- */
+.cards-scroll-container { 
+  width: 100%; 
+  /* Rimosso overflow-x e padding eccessivo */
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1; /* Occupa lo spazio disponibile */
+}
+
+.cards-row { 
+  display: flex; 
+  flex-wrap: wrap; /* FONDAMENTALE: Va a capo se non ci stanno */
+  justify-content: center; 
+  gap: 20px; /* Spazio tra le card */
+  max-width: 1200px; /* Larghezza massima per forzare 4 per riga su schermi grandi */
+  padding: 0 20px;
+}
+
+/* CARD MENU */
 .menu-card {
-  flex: 0 0 auto; width: 240px; height: 340px;
-  background: rgba(18, 18, 20, 0.6); border: 1px solid #333; border-radius: 8px;
-  position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); backdrop-filter: blur(5px); text-decoration: none;
+  flex: 0 0 auto; 
+  width: 200px; height: 280px; /* DIMENSIONI RIDOTTE PER STARE NELLO SCHERMO */
+  background: rgba(20, 20, 23, 0.4); 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative; overflow: hidden; 
+  display: flex; flex-direction: column; justify-content: flex-end;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(4px); 
+  text-decoration: none;
 }
-.menu-card:hover { transform: translateY(-15px) scale(1.05); border-color: var(--gold); box-shadow: 0 0 30px var(--gold-glow); z-index: 10; }
-.card-visual-area { position: absolute; inset: 0; z-index: 0; transition: 0.5s; filter: grayscale(100%) brightness(0.5); }
-.menu-card:hover .card-visual-area { filter: grayscale(0%) brightness(1); transform: scale(1.1); }
-.card-img-element { width: 100%; height: 100%; object-fit: cover; }
-.card-content { position: relative; z-index: 2; padding: 25px; background: linear-gradient(to top, #000 10%, transparent); width: 100%; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
-.card-title { font-size: 20px; font-weight: 900; text-transform: uppercase; color: #fff; letter-spacing: 1px; }
 
-/* =========================================
-   3. PAGINE INTERNE (MAIN HEADER & CODEX)
-   ========================================= */
-.codex-layout { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; background: radial-gradient(circle at top center, #15151a 0%, #000000 100%); }
+/* HOVER EFFECT */
+.menu-card:hover { 
+  transform: translateY(-5px) scale(1.05); 
+  border-color: var(--card-color); 
+  box-shadow: 0 10px 30px -5px var(--card-glow); 
+  z-index: 10;
+}
 
-/* HEADER PRINCIPALE (Il ripristino che chiedevi) */
+/* IMMAGINE DI SFONDO CARD */
+.card-visual-area { 
+  position: absolute; inset: 0; z-index: 0; 
+  transition: 0.6s ease; 
+  filter: grayscale(100%) brightness(0.4) contrast(1.2);
+}
+.card-img-element { 
+  width: 100%; height: 100%; object-fit: cover; 
+}
+
+.menu-card:hover .card-visual-area { 
+  filter: grayscale(0%) brightness(1.1) contrast(1); 
+  transform: scale(1.1);
+}
+
+/* CONTENUTO TESTUALE CARD */
+.card-content { 
+  position: relative; z-index: 2; 
+  padding: 15px; 
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 60%, transparent 100%); 
+  width: 100%; border-top: 1px solid rgba(255,255,255,0.05);
+  transition: 0.3s;
+}
+.menu-card:hover .card-content {
+  background: linear-gradient(to top, var(--card-glow) 0%, rgba(0,0,0,0.8) 80%, transparent 100%);
+  border-top-color: var(--card-color);
+}
+
+.card-title { 
+  font-size: 18px; /* Font leggermente ridotto */
+  font-weight: 900; 
+  text-transform: uppercase; color: #fff; 
+  letter-spacing: 1px; margin-bottom: 2px; line-height: 1;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+.menu-card:hover .card-title { color: var(--card-color); }
+
+.card-sub { 
+  font-size: 9px; color: #aaa; 
+  text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
+}
+.menu-card:hover .card-sub { color: #fff; }
+
+/* FOOTER */
+.landing-footer {
+  margin-top: 20px; 
+  margin-bottom: 20px;
+  color: #444; font-size: 9px; 
+  text-transform: uppercase; letter-spacing: 3px; 
+  font-family: monospace;
+  opacity: 0.7;
+}
+
+/* ANIMAZIONI */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+==================================================
+FILE: src\app\hud-layout.css
+==================================================
+
+/* LAYOUT CODEX */
+.codex-layout { 
+  display: flex; flex-direction: column; height: 100vh; width: 100vw; 
+  overflow: hidden; background: radial-gradient(circle at top center, #15151a 0%, #000000 100%); 
+}
+
+/* HEADER HUD */
 .header-group {
   flex-shrink: 0; background: var(--bg-header); backdrop-filter: blur(12px);
   z-index: 50; border-bottom: 1px solid rgba(255,255,255,0.05);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
 }
+.nav-top-row { display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 70px; }
 
-.nav-top-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 40px; height: 70px;
+/* AGGIUNTO: Wrapper per Bottone Home e Titolo */
+.nav-brand {
+  display: flex; align-items: center; gap: 25px; /* Spazio prima della linea gialla */
 }
-.nav-brand { display: flex; align-items: center; gap: 20px; }
-.nav-home-btn {
-  font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--text-muted);
-  text-decoration: none; text-transform: uppercase; padding: 8px 12px;
-  border: 1px solid #333; border-radius: 4px; transition: all 0.3s;
-}
+
+.nav-home-btn { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: var(--text-muted); text-decoration: none; text-transform: uppercase; padding: 8px 12px; border: 1px solid #333; border-radius: 4px; transition: all 0.3s; }
 .nav-home-btn:hover { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
 
-.page-title {
-  font-size: 28px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(255,255,255,0.1);
-  border-left: 3px solid var(--gold); padding-left: 20px; line-height: 1;
-}
+.page-title { font-size: 28px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 20px rgba(255,255,255,0.1); border-left: 3px solid var(--gold); padding-left: 20px; line-height: 1; }
 
-/* Stats */
 .stats-right { display: flex; align-items: center; gap: 30px; }
-.stat-box { text-align: right; }
 .stat-label { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
 .stat-value { font-size: 18px; color: #fff; font-weight: 300; font-family: monospace; }
 .stat-value span { color: var(--gold); font-weight: bold; }
 
-/* Controlli e Filtri */
-.controls-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 40px; background: rgba(0,0,0,0.3);
-  border-top: 1px solid rgba(255,255,255,0.03);
+/* CONTROLLI E FILTRI */
+.controls-row { 
+  display: flex; align-items: center; justify-content: space-between; 
+  padding: 15px 40px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.03); 
 }
 
-.filters-left { display: flex; gap: 20px; align-items: center; }
-.category-tabs { display: flex; gap: 5px; }
+.category-tabs {
+  display: flex; background: #08080a; border: 1px solid #333; 
+  border-radius: 4px; padding: 3px; gap: 2px;
+}
 .tab-btn {
-  background: transparent; border: none; border-bottom: 2px solid transparent;
-  color: #666; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-  padding: 8px 12px; cursor: pointer; transition: all 0.3s;
+  background: transparent; border: none; color: #666;
+  padding: 6px 16px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.3s; text-transform: uppercase; border-radius: 2px;
 }
 .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
 .tab-btn.active { 
-  color: var(--gold); border-bottom-color: var(--gold); 
-  background: linear-gradient(to top, rgba(212, 175, 55, 0.1), transparent);
+  background: var(--gold); color: #000; 
+  box-shadow: 0 0 15px var(--gold-glow); 
 }
 
-.sub-filters-container { display: flex; gap: 8px; border-left: 1px solid #444; padding-left: 20px; }
-.pill-btn {
-  font-size: 10px; text-transform: uppercase; font-weight: bold; padding: 5px 12px;
-  background: #1a1a1e; color: #888; border: 1px solid #333; border-radius: 20px; cursor: pointer;
-  transition: all 0.2s;
-}
-.pill-btn:hover { border-color: #777; color: #fff; }
-.pill-btn.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+.filters-right { display: flex; align-items: center; gap: 20px; }
 
-.search-wrapper { position: relative; }
 .search-input { 
   background: #08080a; border: 1px solid #333; color: #fff; 
   padding: 8px 15px; width: 220px; border-radius: 4px; font-size: 12px; 
-  text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+  text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; 
 }
 .search-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 15px var(--gold-glow); background: #000; }
 
-.toggle-missing {
-  display: flex; align-items: center; gap: 8px; cursor: pointer; color: #888; 
-  font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+.toggle-filter { 
+  display: flex; align-items: center; gap: 8px; cursor: pointer; 
+  color: #888; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; 
 }
-.toggle-missing:hover { color: #fff; }
-.checkbox-custom {
-  width: 14px; height: 14px; border: 1px solid #555; background: #000;
-  display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--gold);
-}
-.toggle-missing input:checked + .checkbox-custom { border-color: var(--gold); box-shadow: 0 0 5px var(--gold-glow); }
+.toggle-filter:hover { color: #fff; }
 
-.btn-import {
-  background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.4); color: var(--blue-energy);
-  padding: 6px 14px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-  cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 6px; border-radius: 4px;
+.checkbox-custom { 
+  width: 16px; height: 16px; border: 1px solid #444; background: #08080a; 
+  display: flex; align-items: center; justify-content: center; 
+  color: var(--gold); border-radius: 3px; transition: 0.2s; 
 }
-.btn-import:hover { background: var(--blue-energy); color: #fff; box-shadow: 0 0 15px var(--blue-glow); }
-
-/* Gallery Scroll Area */
-.gallery-scroll-area {
-  flex-grow: 1; overflow-y: auto; padding: 40px;
-  scrollbar-width: thin; scrollbar-color: #333 transparent;
-}
-.gallery-scroll-area::-webkit-scrollbar { width: 6px; }
-.gallery-scroll-area::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-
-.card-gallery {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-  gap: 25px; padding-bottom: 100px;
+.toggle-filter input:checked + .checkbox-custom { 
+  border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); background: rgba(212, 175, 55, 0.1); 
 }
 
-/* Card Principale (Griglia) */
+/* GRIGLIA E CARD */
+.gallery-scroll-area { flex-grow: 1; overflow-y: auto; padding: 40px; scrollbar-width: thin; }
+.card-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; padding-bottom: 100px; }
+
 .card-wrapper {
   background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px;
   overflow: hidden; display: flex; flex-direction: column; position: relative;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3); height: 400px;
+  transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); height: 400px !important;
 }
-.card-wrapper:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.6); border-color: #555; }
+.card-wrapper:hover { transform: translateY(-5px); border-color: #555; }
 .card-wrapper[data-rarity="Prime"] { border-top: 2px solid var(--gold); }
-.card-wrapper[data-rarity="Prime"]:hover { border-color: var(--gold); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2); }
+
+.card-image-container { 
+  height: 180px; width: 100%; display: flex; align-items: center; justify-content: center; 
+  padding: 15px; border-bottom: 1px solid #1a1a1e; 
+  background: radial-gradient(circle, #1f1f25 0%, #121214 100%);
+  position: relative;
+}
+.card-image-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
 
 .owned-check { 
-  position: absolute; top: 10px; left: 10px; width: 24px; height: 24px;
-  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+  position: absolute; top: 10px; left: 10px; width: 24px; height: 24px; 
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); 
   display: flex; align-items: center; justify-content: center; 
-  color: #fff; z-index: 10; border-radius: 4px; cursor: pointer; transition: 0.2s;
+  color: #fff; z-index: 10; border-radius: 4px; cursor: pointer; transition: 0.2s; 
 }
-.owned-check:hover { background: rgba(255,255,255,0.2); }
+.owned-check:hover { border-color: var(--gold); color: var(--gold); }
 .card-wrapper.owned .owned-check { background: var(--blue-energy); border-color: var(--blue-energy); box-shadow: 0 0 10px var(--blue-glow); }
 .card-wrapper.owned .card-image-img { filter: grayscale(100%) brightness(0.6); }
 
-.card-image-container { 
-  height: 180px; width: 100%; display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at center, #1f1f25 0%, #121214 100%);
-  padding: 15px; position: relative; border-bottom: 1px solid #1a1a1e;
+.vaulted-tag-card {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(200, 0, 0, 0.2); backdrop-filter: blur(4px);
+  border: 1px solid #ff5555; color: #ff5555;
+  font-size: 9px; font-weight: 900; letter-spacing: 1px;
+  padding: 4px 8px; border-radius: 3px;
+  z-index: 10; text-transform: uppercase;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
 }
-.card-image-img { 
-  max-width: 100%; max-height: 100%; object-fit: contain; 
-  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6)); transition: 0.3s;
-}
-.card-wrapper:hover .card-image-img { transform: scale(1.05); }
 
 .info-area { 
   padding: 15px; flex-grow: 1; display: flex; flex-direction: column; 
   align-items: center; text-align: center; background: #151518;
+  justify-content: space-between;
 }
 
 .mod-name { font-size: 15px; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 4px; letter-spacing: 0.5px; }
 .type-pill { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
-.card-desc { font-size: 11px; color: #888; line-height: 1.4; margin-bottom: auto; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
-
-.hidden-file-input { display: none; }
-
-/* =========================================
-   4. MODALE DETTAGLIO (FULL SCREEN & STILE NUOVO)
-   ========================================= */
-
-.modal-overlay { 
-  position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); 
-  z-index: 1000; display: flex; align-items: center; justify-content: center; 
+.card-desc { 
+  font-size: 11px; color: #888; line-height: 1.4; 
+  margin-bottom: auto; width: 100%; overflow: hidden; 
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; 
 }
 
-.modal-content-simple { 
-  width: 95vw; height: 90vh; max-width: 1600px;
-  background: #08080a; border: 1px solid #333; border-radius: 4px; 
-  overflow: hidden; position: relative; box-shadow: 0 0 100px rgba(0,0,0,0.9); 
-  display: flex; flex-direction: column;
-}
+.progress-line-container { width: 100%; height: 2px; background: #222; margin-top: auto; }
+.progress-line-fill { height: 100%; background: var(--gold); box-shadow: 0 0 10px var(--gold); transition: width 0.6s; }
 
-.close-btn { 
-  position: absolute; top: 20px; right: 25px; 
-  color: #fff; font-size: 28px; background: none; border: none; 
-  cursor: pointer; z-index: 20; opacity: 0.6; transition: 0.2s;
+.wiki-btn-block { 
+  display: block; width: 100%; margin-top: 15px; padding: 8px; 
+  background: transparent; text-align: center; 
+  font-size: 10px; font-weight: 800; letter-spacing: 2px;
+  color: #666; border: 1px solid #333; border-radius: 2px; 
+  text-transform: uppercase; text-decoration: none;
+  transition: all 0.2s; 
 }
-.close-btn:hover { opacity: 1; color: var(--gold); }
-
-/* HEADER MODALE */
-.modal-header-row {
-  display: flex; justify-content: space-between; align-items: center;
-  /* PADDING DESTRO AGGIUNTO PER EVITARE LA X */
-  padding: 25px 70px 25px 35px; 
-  border-bottom: 1px solid #222; background: #0a0a0c;
+.wiki-btn-block:hover { 
+  color: #fff; border-color: #666; background: #1a1a1e; 
 }
-.modal-title { font-size: 36px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-
-/* BODY (3 Colonne Flex) */
-.modal-body { flex: 1; display: flex; overflow: hidden; padding: 0; }
-
-.col-left {
-  width: 320px; flex-shrink: 0; padding: 30px;
-  border-right: 1px solid #222; background: #050505;
-  display: flex; flex-direction: column; align-items: center; overflow-y: auto;
-}
-
-.col-center {
-  flex: 1; padding: 30px;
-  border-right: 1px solid #222; background: #0b0b0e;
-  overflow-y: auto;
-}
-
-.col-right {
-  flex: 1.4; padding: 30px;
-  background: #08080a; overflow-y: auto;
-}
-
-/* UI MODALE */
-.section-title { 
-  color: var(--gold-dim); border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px; 
-  font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; 
-}
-.btn-toggle-large {
-  width: 100%; padding: 15px; margin-top: 25px;
-  background: var(--gold); color: #000; font-weight: 800; letter-spacing: 1px;
-  border: none; border-radius: 2px; cursor: pointer; text-transform: uppercase;
-}
-.btn-toggle-large.owned { background: #222; color: #fff; border: 1px solid #444; }
-.wiki-btn-block {
-  display: block; width: 100%; text-align: center; margin-top: 15px; padding: 10px;
-  background: transparent; color: #666; border: 1px solid #222; font-size: 11px;
-  letter-spacing: 1px; text-transform: uppercase; transition: 0.2s;
-}
-.wiki-btn-block:hover { color: #fff; border-color: #555; background: #111; }
-.vault-badge { font-size: 11px; padding: 6px 16px; border-radius: 2px; font-weight: bold; letter-spacing: 1px; }
-.vault-badge.is-vaulted { background: rgba(255, 50, 50, 0.1); color: #ff5555; border: 1px solid rgba(255, 50, 50, 0.3); }
-.vault-badge.is-available { background: rgba(50, 255, 100, 0.05); color: #5fffa5; border: 1px solid rgba(50, 255, 100, 0.2); }
-.warframe-description { font-size: 13px; color: #999; font-style: italic; line-height: 1.5; text-align: center; margin-bottom: 20px; padding: 0 10px; }
-
-/* --- COMPONENTI MODALE --- */
-.component-row { margin-bottom: 30px; }
-.component-header { 
-  display: flex; align-items: center; margin-bottom: 12px; 
-  background: #121215; padding: 10px; border-radius: 4px; border: 1px solid #222;
-}
-.component-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
-.component-icon img { max-width: 100%; max-height: 100%; }
-.count-badge { font-size: 10px; background: #000; color: #666; padding: 3px 8px; border-radius: 4px; border: 1px solid #222; margin-left: auto; }
-
-/* MINI CARTE RELIQUIE */
-.relic-cards-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
-}
-
-.mini-relic-card {
-  background: #1a1a1d;
-  border: 1px solid #333; border-radius: 4px; padding: 10px;
-  display: flex; flex-direction: row; align-items: center; gap: 12px;
-  position: relative; min-height: 55px; transition: all 0.2s;
-  cursor: pointer; overflow: hidden;
-}
-.mini-relic-card:hover {
-  border-color: #666; background: #222;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5); transform: translateY(-2px);
-}
-
-/* STILE CARTA VAULTED */
-.mini-relic-card.is-vaulted {
-  opacity: 0.6; border-color: #3a2a2a; background: #141010;
-}
-.mini-relic-card.is-vaulted:hover { opacity: 1; border-color: var(--red-vault); }
-
-/* STILE CARTA SELEZIONATA (Multi-Selezione) */
-.mini-relic-card.selected {
-  border-color: var(--gold);
-  background: rgba(212, 175, 55, 0.08); /* Sfondo dorato tenue */
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-  opacity: 1 !important;
-}
-.mini-relic-card.selected .card-name { color: var(--gold); }
-.mini-relic-card.selected .relic-icon-svg { fill: var(--gold); filter: drop-shadow(0 0 5px var(--gold-glow)); }
-
-.mini-relic-card.is-mission { border-style: solid; background: #0f0f11; cursor: default; }
-
-/* Immagini e Icone */
-.relic-card-img {
-  width: 32px; height: 32px; object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); flex-shrink: 0;
-}
-.mission-icon-svg { width: 24px; height: 24px; fill: #444; flex-shrink: 0; }
-
-/* Icona SVG della Reliquia (Esagono) */
-.relic-icon-svg { 
-  width: 28px; height: 28px; 
-  fill: #444; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
-  transition: 0.3s; flex-shrink: 0;
-}
-.mini-relic-card:hover .relic-icon-svg { fill: #888; } 
-
-.card-info { display: flex; flex-direction: column; flex: 1; min-width: 0; justify-content: center; }
-.card-name { font-size: 12px; color: #fff; font-weight: 700; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-pct { display: flex; align-items: center; font-size: 11px; color: var(--gold); font-weight: 600; margin-top: 3px; }
-
-/* TAG VAULTED MINI */
-.vaulted-mini-tag {
-  font-size: 8px; color: var(--red-vault); background: rgba(255, 85, 85, 0.1);
-  padding: 1px 4px; border-radius: 2px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.3);
-  font-weight: 900; letter-spacing: 0.5px;
-}
-
-/* --- STRATEGIA --- */
-.strategy-container { display: flex; flex-direction: column; gap: 15px; }
-.mission-block {
-  background: #121215; border: 1px solid #2a2a2e; border-radius: 4px;
-  padding: 0; overflow: hidden;
-}
-.mission-block-header { 
-  background: #18181b; padding: 10px 15px; border-bottom: 1px solid #222;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.mission-name-large { font-size: 13px; font-weight: bold; color: #fff; letter-spacing: 0.5px; }
-.mission-relics-table { width: 100%; border-collapse: collapse; }
-.mission-relics-table th { text-align: left; font-size: 9px; color: #555; padding: 8px 15px; background: #0e0e10; font-weight: bold; letter-spacing: 1px; }
-.mission-relics-table td { padding: 10px 15px; border-bottom: 1px solid #1f1f22; font-size: 12px; vertical-align: middle; color: #bbb; }
-.mission-relics-table tr:last-child td { border: none; }
-
-.part-badge {
-  display: inline-block; background: rgba(95, 255, 165, 0.08); border: 1px solid rgba(95, 255, 165, 0.2);
-  color: var(--green-tech); padding: 2px 8px; border-radius: 3px;
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-}
-
-/* Scrollbars */
-div::-webkit-scrollbar { width: 6px; }
-div::-webkit-scrollbar-track { background: #050505; }
-div::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-div::-webkit-scrollbar-thumb:hover { background: #555; }
 
 ==================================================
 FILE: src\app\layout.js
@@ -498,12 +452,38 @@ export default function RootLayout({ children }) {
 FILE: src\app\melee\page.js
 ==================================================
 
+"use client";
+import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
-import { fetchGameData } from '@/utils/serverData';
 
-export default async function Page() {
-    const data = await fetchGameData('Melee.json');
-    return <CodexListPage initialData={data} pageTitle="MELEE WEAPONS" />;
+const MELEE_CATEGORIES = [
+    {
+        id: 'all',
+        label: 'ALL',
+        filter: (item) => item.category === 'Melee'
+    },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => item.category === 'Melee' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => item.category === 'Melee' && item.name.includes('Prime')
+    }
+];
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Blades...</div>}>
+            <CodexListPage 
+                filesToLoad={['Melee.json']} 
+                pageTitle="MELEE WEAPONS" 
+                customCategories={MELEE_CATEGORIES}
+            />
+        </Suspense>
+    );
 }
 
 ==================================================
@@ -822,6 +802,511 @@ FILE: src\app\modal.css
 .strategy-placeholder { text-align: center; padding: 40px; color: #555; font-style: italic; font-size: 13px; }
 
 ==================================================
+FILE: src\app\mods\mods.css
+==================================================
+
+/* src/app/mods/mods.css */
+
+/* --- LEGENDA & COLORS --- */
+.legend-box {
+    display: flex; gap: 15px; margin-right: 20px;
+    background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px; border: 1px solid #333;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: bold; color: #888; }
+.dot-leg { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.dot-leg.mission { background: #48dbfb; box-shadow: 0 0 5px #48dbfb; }
+.dot-leg.enemy { background: #ff6b6b; box-shadow: 0 0 5px #ff6b6b; }
+.dot-leg.shop { background: #feca57; box-shadow: 0 0 5px #feca57; }
+
+/* VARS LOCALI PER I COLORI */
+.mods-container {
+    --mission: #48dbfb;
+    --enemy: #ff6b6b;
+}
+
+/* --- CARD DESIGN --- */
+.mod-card-wrapper { 
+    width: 220px; height: 340px; 
+    perspective: 1000px; cursor: default; 
+    position: relative; margin-bottom: 10px;
+}
+
+.mod-card-inner { 
+    position: relative; width: 100%; height: 100%; 
+    text-align: center; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    transform-style: preserve-3d; 
+}
+.mod-card-wrapper.flipped .mod-card-inner { transform: rotateY(180deg); }
+
+.mod-card-front, .mod-card-back { 
+    position: absolute; width: 100%; height: 100%; 
+    backface-visibility: hidden; border-radius: 6px; overflow: hidden; 
+    background-color: #151515; border: 1px solid #444; 
+    display: flex; flex-direction: column; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+}
+
+/* RARITY BORDERS */
+.mod-card-wrapper[data-rarity="Common"] .mod-card-front { border-color: #a89686; }
+.mod-card-wrapper[data-rarity="Uncommon"] .mod-card-front { border-color: #c0c0c0; }
+.mod-card-wrapper[data-rarity="Rare"] .mod-card-front { border-color: #d4af37; }
+.mod-card-wrapper[data-rarity="Legendary"] .mod-card-front { border-color: #b0c9ec; }
+.mod-card-wrapper[data-rarity="Arcane"] .mod-card-front { border-color: #00ffcc; }
+
+/* CHECKBOX & DRAIN */
+.mod-owned-check { 
+    position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.9); 
+    color: #666; width: 35px; height: 30px; font-size: 16px; 
+    z-index: 50; cursor: pointer; border-bottom-right-radius: 8px; 
+    display: flex; align-items: center; justify-content: center; 
+    border-bottom: 1px solid #444; border-right: 1px solid #444; 
+    transition: 0.2s; 
+}
+.mod-owned-check:hover { background: #333; color: #fff; }
+.mod-card-wrapper.owned .mod-owned-check { background: var(--blue-energy); color: #fff; border-color: var(--blue-energy); }
+.mod-card-wrapper.owned .mod-card-img { filter: grayscale(100%) brightness(0.5); }
+
+.mod-drain-box { 
+    position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.9); 
+    color: #fff; padding: 4px 10px; font-weight: bold; font-size: 14px; 
+    z-index: 20; border-bottom-left-radius: 8px; 
+    display: flex; align-items: center; gap: 6px; 
+    border-bottom: 1px solid #444; border-left: 1px solid #444; 
+}
+
+.mod-card-img-container { width: 100%; height: 50%; background-color: #000; position: relative; }
+.mod-card-img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+.mod-info-area { 
+    flex-grow: 1; background: #151515; 
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 10px; position: relative; z-index: 5; justify-content: flex-start; 
+}
+.mod-type-pill { 
+    background: #000; border: 1px solid #444; border-radius: 12px; 
+    padding: 2px 10px; font-size: 9px; font-weight: bold; 
+    color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; 
+}
+.mod-name { 
+    font-size: 13px; font-weight: 800; text-transform: uppercase; 
+    color: #fff; margin-bottom: 4px; text-align: center; 
+    width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+}
+.mod-desc { 
+    font-size: 10px; color: #ccc; text-align: center; line-height: 1.3; 
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; 
+    overflow: hidden; width: 100%; flex-grow: 1; 
+}
+
+/* RANK CONTROLS */
+.mod-rank-controls { 
+    display: flex; width: 100%; align-items: center; justify-content: space-between; 
+    padding-top: 8px; border-top: 1px solid #222; margin-top: auto; 
+}
+.mod-rank-btn { 
+    background: #222; border: 1px solid #444; color: #fff; font-weight: bold; 
+    cursor: pointer; width: 20px; height: 20px; border-radius: 3px; 
+    display: flex; align-items: center; justify-content: center; font-size: 14px; 
+}
+.mod-rank-btn:hover { border-color: var(--gold); color: var(--gold); }
+.mod-ranks-dots { display: flex; justify-content: center; gap: 2px; flex-grow: 1; padding: 0 5px; flex-wrap: wrap; }
+.mod-dot { width: 5px; height: 5px; border-radius: 50%; background: #333; transition: 0.2s; }
+.mod-dot.active { background: var(--gold); box-shadow: 0 0 5px var(--gold-glow); }
+
+/* BACK SIDE */
+.mod-card-back { 
+    background: #121212; 
+    transform: rotateY(180deg); padding: 0; text-align: left; position: relative; 
+}
+.mod-back-header { 
+    padding: 10px; border-bottom: 1px solid #333; background: rgba(0,0,0,0.6); 
+    display: flex; justify-content: space-between; align-items: center; 
+}
+.mod-back-title { color: #fff; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+.mod-trade-badge { font-size: 8px; color: #2ecc71; border: 1px solid #2ecc71; padding: 1px 4px; border-radius: 2px; }
+
+.mod-source-content { 
+    flex-grow: 1; overflow-y: auto; font-size: 10px; color: #ccc; 
+    padding: 10px; padding-bottom: 40px; scrollbar-width: thin; 
+}
+.mod-drop-row { display: flex; flex-direction: column; border-bottom: 1px solid #222; padding: 6px 0; }
+.mod-drop-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.mod-drop-loc { font-weight: bold; color: #ddd; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
+.mod-drop-pct { color: #aaa; font-family: monospace; }
+.mod-drop-bar-bg { width: 100%; height: 2px; background: #222; border-radius: 2px; }
+.mod-drop-bar-fill { height: 100%; transition: width 0.3s; }
+.mod-no-drop { text-align: center; color: #555; font-style: italic; margin-top: 20px; }
+
+.mod-wiki-btn { 
+    position: absolute; bottom: 0; left: 0; width: 100%; 
+    background: #1a1a1a; border-top: 1px solid #444; color: #eee; 
+    padding: 10px 0; font-size: 11px; text-align: center; text-decoration: none; 
+    font-weight: 700; text-transform: uppercase; display: block; cursor: pointer;
+}
+.mod-wiki-btn:hover { color: var(--gold); background: #222; }
+
+==================================================
+FILE: src\app\mods\page.js
+==================================================
+
+"use client";
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+// Importiamo le costanti del progetto per coerenza (API e Immagini)
+import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
+// Importiamo lo stile globale del layout HUD
+import '@/app/hud-layout.css'; 
+// Importiamo lo stile specifico per le carte mod
+import './mods.css';
+
+const STORAGE_KEY = 'warframe_codex_mods_v1';
+
+export default function ModsPage() {
+    const router = useRouter();
+    const [rawApiData, setRawApiData] = useState([]);
+    const [ownedCards, setOwnedCards] = useState(new Set());
+    const [loading, setLoading] = useState(true);
+    
+    // Filtri
+    const [currentCategory, setCurrentCategory] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentSort, setCurrentSort] = useState('name');
+    const [showMissingOnly, setShowMissingOnly] = useState(false);
+
+    // Infinite Scroll
+    const [visibleCount, setVisibleCount] = useState(60);
+    
+    // --- 1. LOGICA DI CARICAMENTO (COERENTE CON IL RESTO DEL SITO) ---
+    useEffect(() => {
+        let isMounted = true;
+        async function loadData() {
+            setLoading(true);
+            try {
+                // Fetch dai file JSON locali (API_BASE_URL) invece che da unpkg
+                const [modsRes, arcanesRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/Mods.json`),
+                    fetch(`${API_BASE_URL}/Arcanes.json`)
+                ]);
+                
+                if (!isMounted) return;
+
+                // Gestione errori se i file non esistono
+                if (!modsRes.ok || !arcanesRes.ok) throw new Error("Impossible to load Mods/Arcanes local DB");
+
+                const modsData = await modsRes.json();
+                const arcanesData = await arcanesRes.json();
+                const combined = [...modsData, ...arcanesData];
+
+                const processed = [];
+                const ids = new Set();
+
+                combined.forEach(item => {
+                    // Filtri di pulizia base
+                    if (!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
+                    if (item.uniqueName && item.uniqueName.toLowerCase().includes("setmod")) return; 
+                    if (ids.has(item.name)) return; 
+                    
+                    ids.add(item.name);
+                    
+                    // Pre-calcolo stringa ricerca
+                    const dropLocs = item.drops ? item.drops.map(d => d.location).join(" ") : "";
+                    item.searchString = `${item.name} ${item.type} ${item.category || ""} ${dropLocs}`.toLowerCase();
+                    
+                    // Normalizziamo i dati per il componente ModCard
+                    // Calcolo Max Rank (fusionLimit)
+                    item.maxRank = item.fusionLimit || (item.levelStats ? item.levelStats.length - 1 : 5);
+                    
+                    processed.push(item);
+                });
+
+                // Ordinamento alfabetico iniziale
+                processed.sort((a, b) => a.name.localeCompare(b.name));
+                setRawApiData(processed);
+                
+                // Load LocalStorage
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) { console.error(e); }
+                }
+
+            } catch (e) { console.error("Error loading mods:", e); } 
+            finally { if (isMounted) setLoading(false); }
+        }
+        loadData();
+        return () => { isMounted = false; };
+    }, []);
+
+    // 2. Salvataggio automatico
+    useEffect(() => {
+        if (!loading && typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedCards]));
+        }
+    }, [ownedCards, loading]);
+
+    // 3. Filtraggio (Logica originale mantenuta)
+    const filteredData = useMemo(() => {
+        let data = rawApiData.filter(item => {
+            if (searchTerm && !item.searchString.includes(searchTerm)) return false;
+            if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
+            
+            const t = (item.type || "").toLowerCase();
+            const slot = (item.slot || "").toLowerCase();
+            const cat = (item.category || "").toLowerCase();
+            const isAugment = item.isAugment || item.name.includes("Augment");
+            const isAura = t.includes("aura") || slot === "aura";
+            const isArcane = cat.includes("arcane") || t.includes("arcane");
+
+            switch (currentCategory) {
+                case 'all': return true;
+                case 'warframe': return t.includes("warframe") && !isAura && !isAugment && !isArcane;
+                case 'aura': return isAura;
+                case 'augment': return isAugment;
+                case 'arcane': return isArcane;
+                case 'primary': return (t.includes("rifle") || t.includes("bow") || t.includes("shotgun") || t.includes("sniper")) && !isAugment;
+                case 'secondary': return (t.includes("pistol") || t.includes("secondary")) && !isAugment;
+                case 'melee': return (t.includes("melee")) && !isAugment;
+                case 'exilus': return item.isExilus || slot === "exilus";
+                case 'companion': return t.includes("companion") || t.includes("sentinel") || t.includes("beast");
+                case 'archwing': return t.includes("archwing") || t.includes("arch-gun");
+                default: return true;
+            }
+        });
+
+        // Ordinamento
+        const rarityMap = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Legendary': 4 };
+        data.sort((a, b) => {
+            if (currentSort === 'name') return a.name.localeCompare(b.name);
+            if (currentSort === 'drain') return (b.baseDrain || 0) - (a.baseDrain || 0);
+            if (currentSort === 'rarity') {
+                const rA = rarityMap[a.rarity] || 0;
+                const rB = rarityMap[b.rarity] || 0;
+                if (rA !== rB) return rB - rA;
+                return a.name.localeCompare(b.name);
+            }
+            if (currentSort === 'chance') {
+                const maxA = a.drops && a.drops.length ? Math.max(...a.drops.map(d=>d.chance)) : 0;
+                const maxB = b.drops && b.drops.length ? Math.max(...b.drops.map(d=>d.chance)) : 0;
+                return maxA - maxB;
+            }
+            return 0;
+        });
+
+        return data;
+    }, [rawApiData, currentCategory, searchTerm, currentSort, showMissingOnly, ownedCards]);
+
+    const toggleOwned = (id) => {
+        const newSet = new Set(ownedCards);
+        if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+        setOwnedCards(newSet);
+    };
+
+    const pct = rawApiData.length > 0 ? Math.round((ownedCards.size / rawApiData.length) * 100) : 0;
+
+    return (
+        <div className="codex-layout">
+            <div className="header-group">
+                {/* TOP ROW: HOME, TITLE, STATS */}
+                <div className="nav-top-row">
+                    <div className="nav-brand">
+                        <a href="/" className="nav-home-btn">⌂ HOME</a>
+                        <h1 className="page-title">MODS & ARCANES</h1>
+                    </div>
+                    <div className="stats-right">
+                        <div className="stat-box">
+                            <div className="stat-label">COLLECTED</div>
+                            <div className="stat-value"><span>{ownedCards.size}</span> / {rawApiData.length}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">COMPLETION</div>
+                            <div className="stat-value">{pct}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* CONTROLS ROW */}
+                <div className="controls-row">
+                    <div className="filters-left" style={{overflowX:'auto', maxWidth:'60%'}}>
+                        <div className="category-tabs" style={{flexWrap:'nowrap'}}>
+                            {['all','warframe','aura','augment','arcane','primary','secondary','melee','exilus','companion','archwing'].map(cat => (
+                                <button 
+                                    key={cat}
+                                    className={`tab-btn ${currentCategory === cat ? 'active' : ''}`}
+                                    onClick={() => { setCurrentCategory(cat); setVisibleCount(60); }}
+                                >
+                                    {cat.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="filters-right">
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" className="search-input" placeholder="SEARCH..." 
+                                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} 
+                            />
+                        </div>
+
+                        <select 
+                            className="search-input" 
+                            style={{width:'auto', cursor:'pointer'}}
+                            value={currentSort}
+                            onChange={(e) => setCurrentSort(e.target.value)}
+                        >
+                            <option value="name">NAME</option>
+                            <option value="rarity">RARITY</option>
+                            <option value="drain">COST</option>
+                            <option value="chance">DROP %</option>
+                        </select>
+
+                        <label className="toggle-filter">
+                            <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
+                            <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
+                            MISSING
+                        </label>
+                    </div>
+                </div>
+                <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
+            </div>
+
+            {/* GALLERY SCROLL AREA */}
+            <div 
+                className="gallery-scroll-area" 
+                onScroll={(e) => {
+                    if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
+                }}
+            >
+                {loading ? (
+                    <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>INITIALIZING ORDIS DATABASE...</div>
+                ) : (
+                    <div className="card-gallery">
+                        {filteredData.slice(0, visibleCount).map(item => (
+                            <ModCard 
+                                key={item.uniqueName} 
+                                item={item} 
+                                isOwned={ownedCards.has(item.uniqueName)} 
+                                onToggle={() => toggleOwned(item.uniqueName)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// --- MOD CARD COMPONENT ---
+function ModCard({ item, isOwned, onToggle }) {
+    const [flipped, setFlipped] = useState(false);
+    const [rank, setRank] = useState(0);
+    const maxRank = item.maxRank || 5; 
+
+    // Helper per descrizione dinamica
+    const getDescription = () => {
+        let desc = item.description || "";
+        if (item.levelStats && item.levelStats.length > 0) {
+            // Usa levelStats se disponibile
+            const statIndex = Math.min(rank, item.levelStats.length - 1);
+            return item.levelStats[statIndex].stats.join('<br>');
+        }
+        // Fallback regex se levelStats manca
+        return desc.replace(/(\d+(\.\d+)?)/g, (match) => {
+            const maxVal = parseFloat(match);
+            const baseVal = maxVal / (maxRank + 1);
+            const currentVal = baseVal * (rank + 1);
+            return currentVal % 1 === 0 ? currentVal.toFixed(0) : currentVal.toFixed(1).replace(/\.0$/, '');
+        }).replace(/\r\n|\n/g, "<br>");
+    };
+
+    const currentDrain = (item.baseDrain || 0) + rank;
+    
+    // ** MODIFICA CHIAVE: Uso IMG_BASE_URL locale invece del CDN esterno **
+    const imgUrl = `${IMG_BASE_URL}/${item.imageName}`;
+    
+    const rarity = item.rarity || "Common";
+    let nameColor = '#fff';
+    if (rarity === 'Rare') nameColor = '#f0e68c';
+    if (rarity === 'Legendary') nameColor = '#b0c9ec';
+    if (item.category === 'Arcanes') nameColor = '#00ffcc';
+
+    // Helper Drops
+    const renderDrops = () => {
+        if (!item.drops || item.drops.length === 0) return <div className="mod-no-drop">Source Unknown / Quest / Market</div>;
+        return item.drops.slice(0, 8).map((d, i) => (
+            <div key={i} className="mod-drop-row">
+                <div className="mod-drop-header">
+                    <span className="mod-drop-loc">{d.location}</span>
+                    <span className="mod-drop-pct">{(d.chance * 100).toFixed(2)}%</span>
+                </div>
+                <div className="mod-drop-bar-bg"><div className="mod-drop-bar-fill" style={{width:`${Math.min(100, d.chance * 100 * 4)}%`}}></div></div>
+            </div>
+        ));
+    };
+
+    return (
+        <div 
+            className={`mod-card-wrapper ${isOwned ? 'owned' : ''} ${flipped ? 'flipped' : ''}`}
+            data-rarity={rarity}
+            onClick={() => setFlipped(!flipped)}
+        >
+            <div className="mod-card-inner">
+                {/* FRONT */}
+                <div className="mod-card-front">
+                    <div className="mod-owned-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+                        {isOwned ? '✔' : '+'}
+                    </div>
+                    <div className="mod-drain-box">
+                        {currentDrain} {item.polarity && <span style={{fontSize:'10px'}}>{item.polarity.substring(0,1)}</span>}
+                    </div>
+                    
+                    <div className="mod-card-img-container">
+                        <img 
+                            src={imgUrl} 
+                            className="mod-card-img" 
+                            alt={item.name} 
+                            loading="lazy" 
+                            // Fallback se l'immagine locale manca (opzionale)
+                            onError={(e)=>{e.target.style.display='none';}} 
+                        />
+                    </div>
+
+                    <div className="mod-info-area">
+                        <div className="mod-type-pill">{item.type}</div>
+                        <div className="mod-name" style={{color: nameColor}}>{item.name}</div>
+                        <div className="mod-desc" dangerouslySetInnerHTML={{__html: getDescription()}}></div>
+
+                        <div className="mod-rank-controls" onClick={(e) => e.stopPropagation()}>
+                            <button className="mod-rank-btn" onClick={() => setRank(Math.max(0, rank - 1))}>-</button>
+                            <div className="mod-ranks-dots">
+                                {Array.from({length: Math.min(10, maxRank + 1)}).map((_, i) => (
+                                    <div key={i} className={`mod-dot ${i <= (rank / maxRank * 10) ? 'active' : ''}`}></div>
+                                ))}
+                            </div>
+                            <button className="mod-rank-btn" onClick={() => setRank(Math.min(maxRank, rank + 1))}>+</button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* BACK */}
+                <div className="mod-card-back">
+                    <div className="mod-back-header">
+                        <div className="mod-back-title">ACQUISITION</div>
+                        {item.tradable && <span className="mod-trade-badge">TRADE</span>}
+                    </div>
+                    <div className="mod-source-content">
+                        {renderDrops()}
+                    </div>
+                    <a href={`https://warframe.fandom.com/wiki/${item.name.replace(/ /g, '_')}`} target="_blank" className="mod-wiki-btn" onClick={(e) => e.stopPropagation()}>
+                        OPEN WIKI
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+==================================================
 FILE: src\app\necramechs\page.js
 ==================================================
 
@@ -868,15 +1353,16 @@ FILE: src\app\page.js
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
+import './homepage.css';
 
-// Aggiunto "Relics" alla lista
+// CONFIGURAZIONE CATEGORIE
 const CATEGORIES = [
     { id: 'warframes', title: 'Warframes', subtitle: 'The Arsenal', color: '#d4af37', link: '/warframes', jsonFile: 'Warframes.json' },
     { id: 'primary', title: 'Primary', subtitle: 'Rifles & Bows', color: '#ff6b6b', link: '/primary', jsonFile: 'Primary.json' },
     { id: 'secondary', title: 'Secondary', subtitle: 'Pistols', color: '#ff9f43', link: '/secondary', jsonFile: 'Secondary.json' },
     { id: 'melee', title: 'Melee', subtitle: 'Blades & Whips', color: '#feca57', link: '/melee', jsonFile: 'Melee.json' },
     { id: 'mods', title: 'Mods', subtitle: 'Upgrades', color: '#54a0ff', link: '/mods', jsonFile: 'Mods.json' },
-    { id: 'relics', title: 'Relics', subtitle: 'Void Fissures', color: '#00d2d3', link: '/relics', jsonFile: 'Relics.json' }, // <--- NUOVA
+    { id: 'relics', title: 'Relics', subtitle: 'Void Fissures', color: '#00d2d3', link: '/relics', jsonFile: 'Relics.json' },
     { id: 'companions', title: 'Companions', subtitle: 'Sentinels', color: '#1dd1a1', link: '/companions', jsonFile: 'Sentinels.json' },
     { id: 'amps', title: 'Amps', subtitle: 'Void Weapons', color: '#a29bfe', link: '/amps', jsonFile: 'Amps.json' }
 ];
@@ -892,18 +1378,25 @@ function ApiImageCard({ cat }) {
                 if (!res.ok) return;
                 const data = await res.json();
                 
-                // Logica speciale per le Reliquie: prende la prima "Intact" o la prima disponibile
+                // Logica per scegliere l'immagine di copertina migliore
                 let targetItem;
                 if (cat.id === 'relics') {
+                    // Per le reliquie cerchiamo una Intact carina
                     targetItem = data.find(item => item.imageName && item.name.includes('Intact'));
                 } else {
+                    // Per il resto, preferiamo i Prime
                     targetItem = data.find(item => item.name.includes("Prime") && item.imageName);
                 }
                 
+                // Fallback sul primo elemento valido se non trova Prime
                 const firstValid = targetItem || data.find(item => item.imageName && !item.imageName.includes("fanart"));
                 
-                if (firstValid && isMounted) setImgUrl(`${IMG_BASE_URL}/${firstValid.imageName}`);
-            } catch (e) { console.error(e); }
+                if (firstValid && isMounted) {
+                    setImgUrl(`${IMG_BASE_URL}/${firstValid.imageName}`);
+                }
+            } catch (e) { 
+                console.error(`Errore img ${cat.id}`, e); 
+            }
         }
         fetchImage();
         return () => { isMounted = false; };
@@ -913,13 +1406,19 @@ function ApiImageCard({ cat }) {
         <Link href={cat.link} style={{textDecoration:'none'}}>
             <div 
                 className="menu-card"
+                // Passiamo i colori come variabili CSS per l'effetto hover
                 style={{ '--card-color': cat.color, '--card-glow': `${cat.color}66` }}
             >
                 <div className="card-visual-area">
-                    {imgUrl ? <img src={imgUrl} alt={cat.title} className="card-img-element" /> : <div style={{background:'#111', width:'100%', height:'100%'}}></div>}
+                    {imgUrl ? (
+                        <img src={imgUrl} alt={cat.title} className="card-img-element" />
+                    ) : (
+                        <div style={{background:'#151518', width:'100%', height:'100%'}}></div>
+                    )}
                 </div>
+                
                 <div className="card-content">
-                    <h2 className="card-title" style={{color: cat.color}}>{cat.title}</h2>
+                    <h2 className="card-title">{cat.title}</h2>
                     <p className="card-sub">{cat.subtitle}</p>
                 </div>
             </div>
@@ -931,6 +1430,7 @@ export default function LandingPage() {
     return (
         <main className="landing-page">
             <div className="landing-content">
+                
                 <div className="landing-header">
                     <h1 className="landing-title">ORDIS CODEX</h1>
                     <div className="landing-subtitle">Tracker & Database System</div>
@@ -944,9 +1444,10 @@ export default function LandingPage() {
                     </div>
                 </div>
                 
-                <div style={{marginTop:'40px', color:'#444', fontSize:'10px', textTransform:'uppercase', letterSpacing:'2px'}}>
-                    Operator Interface v2.0
+                <div className="landing-footer">
+                    Operator Interface v2.0 // System Ready
                 </div>
+
             </div>
         </main>
     );
@@ -956,12 +1457,38 @@ export default function LandingPage() {
 FILE: src\app\primary\page.js
 ==================================================
 
+"use client";
+import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
-import { fetchGameData } from '@/utils/serverData';
 
-export default async function Page() {
-    const data = await fetchGameData('Primary.json');
-    return <CodexListPage initialData={data} pageTitle="PRIMARY WEAPONS" />;
+const PRIMARY_CATEGORIES = [
+    {
+        id: 'all',
+        label: 'ALL',
+        filter: (item) => item.category === 'Primary'
+    },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => item.category === 'Primary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => item.category === 'Primary' && item.name.includes('Prime')
+    }
+];
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Arsenal...</div>}>
+            <CodexListPage 
+                filesToLoad={['Primary.json']} 
+                pageTitle="PRIMARY WEAPONS" 
+                customCategories={PRIMARY_CATEGORIES}
+            />
+        </Suspense>
+    );
 }
 
 ==================================================
@@ -1011,12 +1538,38 @@ export default function Page() {
 FILE: src\app\secondary\page.js
 ==================================================
 
+"use client";
+import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
-import { fetchGameData } from '@/utils/serverData';
 
-export default async function Page() {
-    const data = await fetchGameData('Secondary.json');
-    return <CodexListPage initialData={data} pageTitle="SECONDARY WEAPONS" />;
+const SECONDARY_CATEGORIES = [
+    {
+        id: 'all',
+        label: 'ALL',
+        filter: (item) => item.category === 'Secondary'
+    },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => item.category === 'Secondary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => item.category === 'Secondary' && item.name.includes('Prime')
+    }
+];
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Sidearms...</div>}>
+            <CodexListPage 
+                filesToLoad={['Secondary.json']} 
+                pageTitle="SECONDARY WEAPONS" 
+                customCategories={SECONDARY_CATEGORIES}
+            />
+        </Suspense>
+    );
 }
 
 ==================================================
@@ -1027,11 +1580,35 @@ FILE: src\app\warframes\page.js
 import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
 
+// CONFIGURAZIONE CATEGORIE (ALL, BASE, PRIME)
 const WARFRAME_CATEGORIES = [
     {
         id: 'all',
-        label: 'WARFRAMES',
-        filter: (item) => (item.type || "").toLowerCase() === 'warframe' && item.category === 'Warframes'
+        label: 'ALL',
+        // RIMUOVE I NECRAMECH
+        filter: (item) => 
+            (item.type || "").toLowerCase().includes('warframe') && 
+            item.category === 'Warframes' &&
+            !item.name.toLowerCase().includes('necramech') &&
+            !(item.type || "").toLowerCase().includes('necramech')
+    },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => 
+            (item.type || "").toLowerCase().includes('warframe') && 
+            item.category === 'Warframes' && 
+            !item.name.includes('Prime') &&
+            !item.name.toLowerCase().includes('necramech')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => 
+            (item.type || "").toLowerCase().includes('warframe') && 
+            item.category === 'Warframes' && 
+            item.name.includes('Prime') &&
+            !item.name.toLowerCase().includes('necramech')
     }
 ];
 
@@ -1053,16 +1630,13 @@ FILE: src\components\CodexCard.js
 
 "use client";
 import { useState, memo } from 'react';
-import { IMG_BASE_URL, BASE_PATH } from '@/utils/constants';
+import { IMG_BASE_URL } from '@/utils/constants';
 
-// Helper dal vecchio file per calcolare le statistiche al volo
 const getStatAtRank = (rank, maxRank, descriptionTemplate, levelStats) => {
-    // Caso 1: Array di stats predefinito (Source: 59)
     if (levelStats && levelStats.length > 0) {
         let statsArray = levelStats[rank] ? levelStats[rank].stats : levelStats[levelStats.length - 1].stats;
         return statsArray.join('<br>');
     }
-    // Caso 2: Calcolo matematico (Source: 61)
     if (!descriptionTemplate) return "";
     return descriptionTemplate.replace(/(\d+(\.\d+)?)/g, (match) => {
         const maxVal = parseFloat(match);
@@ -1073,14 +1647,15 @@ const getStatAtRank = (rank, maxRank, descriptionTemplate, levelStats) => {
 };
 
 const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
-    // Stato locale per il rank (solo per Mods/Arcanes)
     const [rank, setRank] = useState(item.maxRank || 0);
 
     const isMod = item.category === 'Mods';
     const isArcane = item.category === 'Arcanes';
     const isPrime = item.name.includes("Prime");
     
-    // Logica aggiornamento rank (Source: 62)
+    // --- LOGICA PURA: SI BASA SOLO SUL DATO SCRITTO ---
+    const isVaulted = !!item.vaulted;
+
     const updateRank = (e, change) => {
         e.stopPropagation();
         let newRank = rank + change;
@@ -1089,32 +1664,30 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
         setRank(newRank);
     };
 
-    // Determina cosa mostrare: Stats calcolate (se mod) o Descrizione statica
     let displayDesc = item.description || "Nessuna descrizione.";
     if (isMod || isArcane) {
         displayDesc = getStatAtRank(rank, item.maxRank, item.rawDescription || item.description, item.levelStats);
     }
     
-    // Pulizia
-    displayDesc = displayDesc.replace(/<br>/g, " <br/> "); 
+    displayDesc = displayDesc.replace(/<br>/g, " <br/> ");
 
     return (
         <div className={`card-wrapper ${isOwned ? 'owned' : ''}`} data-rarity={item.rarity || (isPrime ? 'Prime' : 'Common')}>
             
-            {/* Immagine */}
             <div className="card-image-container">
-                {/* Drain Box dal vecchio file (Source: 66) integrato nel nuovo stile */}
+                <div className="owned-check" onClick={(e) => { e.stopPropagation(); onToggleOwned(item.uniqueName); }}>
+                    {isOwned ? '✔' : ''}
+                </div>
+
+                {/* Mostra ETICHETTA solo se il dato dice che è Vaulted */}
+                {isVaulted && <div className="vaulted-tag-card">VAULTED</div>}
+
                 {(item.baseDrain || item.polarityIcon) && (isMod || isArcane) && (
                     <div className="drain-box">
                         {item.baseDrain ? (item.baseDrain + rank) : ""}
                         {item.polarityIcon && <img src={item.polarityIcon} className="polarity-icon" alt="pol" />}
                     </div>
                 )}
-
-                {/* Checkbox */}
-                <div className="owned-check" onClick={(e) => { e.stopPropagation(); onToggleOwned(item.uniqueName); }}>
-                    {isOwned ? '✔' : ''}
-                </div>
 
                 {item.imageName ? (
                     <img 
@@ -1127,7 +1700,6 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
                 ) : <div style={{fontSize:'10px', color:'#666'}}>{item.name}</div>}
             </div>
 
-            {/* Info Area */}
             <div className="info-area">
                 <div className="type-pill">{item.type}</div>
                 <div className="mod-name" style={{color: isPrime ? 'var(--gold)' : '#fff'}}>
@@ -1136,12 +1708,10 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
                 
                 <div className="card-desc" dangerouslySetInnerHTML={{__html: displayDesc}}></div>
 
-                {/* Rank Controls (Se è Mod/Arcane) - Source: 76 */}
                 {(isMod || isArcane) && item.maxRank > 0 && (
                     <div className="rank-controls-container">
                         <button className="rank-btn" onClick={(e) => updateRank(e, -1)}>-</button>
                         <div className="ranks-dots">
-                             {/* Mostriamo massimo 10 pallini per evitare overflow grafico */}
                             {Array.from({length: Math.min(item.maxRank + 1, 10)}).map((_, i) => (
                                 <div key={i} className={`dot ${i <= (rank / item.maxRank * Math.min(item.maxRank, 9)) ? 'active' : ''}`}></div>
                             ))}
@@ -1165,30 +1735,32 @@ FILE: src\components\CodexListPage.js
 ==================================================
 
 "use client";
-import { useState, useEffect, useMemo, Suspense } from 'react'; // Aggiungi Suspense
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import CodexCard from './CodexCard';
-import WarframeDetailModal from './WarframeDetailModal'; 
+import WarframeDetailModal from './WarframeDetailModal';
 import { useOwnedItems } from '@/hooks/useOwnedItems';
 import { API_BASE_URL } from '@/utils/constants';
+import '@/app/hud-layout.css'; 
 
-// Componente interno che gestisce la logica e i parametri
 function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, manualData = null }) {
     const [rawApiData, setRawApiData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState(null);
     
-    const searchParams = useSearchParams(); // Questo richiede Suspense
+    const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    const { ownedCards, toggleOwned, importItems } = useOwnedItems();
+    const { ownedCards, toggleOwned } = useOwnedItems();
     const [selectedItem, setSelectedItem] = useState(null);
 
     const defaultCat = customCategories ? customCategories[0].id : 'all';
     const subCategory = searchParams.get('sub') || defaultCat;
     const [activeSubFilter, setActiveSubFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState("");
+    
     const [showMissingOnly, setShowMissingOnly] = useState(false);
+    const [hideVaulted, setHideVaulted] = useState(false);
     const [visibleCount, setVisibleCount] = useState(60);
 
     const activeConfig = customCategories ? customCategories.find(c => c.id === subCategory) : null;
@@ -1199,18 +1771,11 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             setLoading(true);
             setErrorMsg(null);
             
-            // Se abbiamo dati manuali (es. Relics)
             if (manualData && manualData.length > 0) {
-                 // ... logica manualData (copia dal tuo codice precedente se necessario, o usa il blocco fetch sotto per tutto)
-                 // Per brevità, qui mi concentro sul fix del fetch
+                 // Gestione dati manuali (semplificata)
                  const processed = manualData
                     .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
-                    .map(item => ({
-                        ...item,
-                        maxRank: item.fusionLimit || item.maxLevel || 30,
-                        baseDrain: item.baseDrain || 0,
-                        polarityIcon: item.polarity ? `https://warframe.fandom.com/wiki/File:Polarity_${item.polarity.charAt(0).toUpperCase() + item.polarity.slice(1)}.png` : null 
-                    }));
+                    .map(item => ({ ...item, maxRank: item.fusionLimit || item.maxLevel || 30 }));
                 const uniqueItems = Array.from(new Map(processed.map(item => [item.name, item])).values());
                 uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
                 setRawApiData(uniqueItems);
@@ -1221,37 +1786,66 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             try {
                 if (filesToLoad.length === 0) { setLoading(false); return; }
 
-                // Fetch gestito SOLO lato client
-                const promises = filesToLoad.map(f => 
-                    fetch(`${API_BASE_URL}/${f}`)
-                        .then(res => {
-                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                            return res.json();
-                        })
-                        .catch(err => {
-                            console.warn(`Skipping ${f}`, err);
-                            return [];
-                        })
-                );
+                // 1. SCARICA I DATI PRINCIPALI (Warframes.json ecc) E IL LOOKUP RELIQUIE IN PARALLELO
+                const [dataResults, lookupRes] = await Promise.all([
+                    Promise.all(filesToLoad.map(f => fetch(`${API_BASE_URL}/${f}`).then(r => r.json()))),
+                    fetch(`${API_BASE_URL}/RelicLookup.json`).then(r => r.ok ? r.json() : null)
+                ]);
 
-                const results = await Promise.all(promises);
-                const merged = results.flat();
+                // Creiamo un Set delle reliquie attive per fare controlli veloci
+                const activeRelicsSet = new Set(lookupRes ? Object.keys(lookupRes) : []);
 
+                const merged = dataResults.flat();
+                
+                // 2. PROCESSA E CORREGGI I DATI
                 const processed = merged
                     .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
-                    .map(item => ({
-                        ...item,
-                        maxRank: item.fusionLimit || item.maxLevel || 30,
-                        baseDrain: item.baseDrain || 0,
-                        polarityIcon: item.polarity ? `https://warframe.fandom.com/wiki/File:Polarity_${item.polarity.charAt(0).toUpperCase() + item.polarity.slice(1)}.png` : null 
-                    }));
+                    .map(item => {
+                        // --- LOGICA SMART VAULTED ---
+                        let computedVaulted = !!item.vaulted; // Partiamo dal JSON
+
+                        // Se è un PRIME, verifichiamo se è VERAMENTE farmabile
+                        if (item.name.includes('Prime') && lookupRes) {
+                            // Cerca le reliquie nei componenti
+                            const relicNames = [];
+                            if (item.components) {
+                                item.components.forEach(c => {
+                                    if(c.drops) c.drops.forEach(d => {
+                                        const match = d.location.toUpperCase().match(/(LITH|MESO|NEO|AXI|REQUIEM)\s+([A-Z0-9]+)/);
+                                        if (match) relicNames.push(`${match[1]} ${match[2]}`);
+                                    });
+                                });
+                            }
+                            
+                            // Se ha componenti Prime MA nessuna delle sue reliquie è nel file attivo -> È VAULTED
+                            // (Nota: se relicNames è vuoto, potrebbe essere un Prime Access esclusivo o buggato, nel dubbio ci fidiamo del JSON)
+                            if (relicNames.length > 0) {
+                                const hasActiveRelic = relicNames.some(r => activeRelicsSet.has(r));
+                                if (!hasActiveRelic) {
+                                    computedVaulted = true; // Forza Vaulted se nessuna reliquia è attiva
+                                } else {
+                                    // Se ha reliquie attive, è Available (corregge eventuali errori del JSON)
+                                    computedVaulted = false; 
+                                }
+                            }
+                        }
+                        // --- FINE LOGICA SMART ---
+
+                        return {
+                            ...item,
+                            vaulted: computedVaulted, // Sovrascriviamo con il dato calcolato
+                            maxRank: item.fusionLimit || item.maxLevel || 30,
+                            baseDrain: item.baseDrain || 0,
+                            polarityIcon: item.polarity ? `https://warframe.fandom.com/wiki/File:Polarity_${item.polarity.charAt(0).toUpperCase() + item.polarity.slice(1)}.png` : null 
+                        };
+                    });
 
                 const uniqueItems = Array.from(new Map(processed.map(item => [item.name, item])).values());
                 uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
                 
                 setRawApiData(uniqueItems);
             } catch (e) { 
-                console.error("Load error:", e); 
+                console.error("Load error:", e);
                 setErrorMsg(e.message);
             }
             finally { setLoading(false); }
@@ -1259,11 +1853,12 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
         load();
     }, [filesHash, manualData]);
 
-    // ... Logica di filtraggio (processedData) uguale a prima ...
     const processedData = useMemo(() => {
         return rawApiData.filter(item => {
             if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
+            if (hideVaulted && item.vaulted) return false;
+            
             if (activeConfig && activeConfig.filter && !activeConfig.filter(item)) return false;
             if (activeConfig && activeConfig.subFilters) {
                 const subLogic = activeConfig.subFilters.find(sf => sf.id === activeSubFilter);
@@ -1271,27 +1866,13 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             }
             return true;
         });
-    }, [rawApiData, subCategory, activeSubFilter, searchTerm, showMissingOnly, ownedCards, activeConfig]);
+    }, [rawApiData, subCategory, activeSubFilter, searchTerm, showMissingOnly, hideVaulted, ownedCards, activeConfig]);
 
     const handleCategoryChange = (id) => {
         const p = new URLSearchParams(searchParams.toString());
         p.set('sub', id);
         router.push(`${pathname}?${p.toString()}`);
         setActiveSubFilter('all'); 
-    };
-    
-    const handleImportAleca = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const json = JSON.parse(ev.target.result);
-                importItems(Array.isArray(json) ? json : [], rawApiData);
-                alert("Import riuscito!");
-            } catch(e) { alert("File non valido"); }
-        };
-        reader.readAsText(file);
     };
 
     if (loading) return <div style={{padding:'50px', color:'#fff', textAlign:'center'}}>INITIALIZING ORDIS DATABASE...</div>;
@@ -1304,7 +1885,7 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             <div className="header-group">
                 <div className="nav-top-row">
                     <div className="nav-brand">
-                        <a href="/" className="nav-home-btn">⌂ DASHBOARD</a>
+                        <a href="/" className="nav-home-btn">⌂ HOME</a>
                         <h1 className="page-title">{pageTitle}</h1>
                     </div>
                     <div className="stats-right">
@@ -1331,26 +1912,30 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
                             </div>
                         )}
                          {activeConfig && activeConfig.subFilters && (
-                            <div className="sub-filters-container">
+                            <div className="category-tabs">
                                 {activeConfig.subFilters.map(sf => (
-                                    <button key={sf.id} onClick={() => setActiveSubFilter(sf.id)} className={`pill-btn ${activeSubFilter === sf.id ? 'active' : ''}`}>
+                                    <button key={sf.id} onClick={() => setActiveSubFilter(sf.id)} className={`tab-btn ${activeSubFilter === sf.id ? 'active' : ''}`}>
                                         {sf.label}
                                     </button>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <div className="filters-right" style={{display:'flex', alignItems:'center', gap:'15px'}}>
+                    
+                    <div className="filters-right">
                          <div className="search-wrapper">
                             <input type="text" className="search-input" placeholder="SEARCH..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} />
                         </div>
-                        <label className="toggle-missing">
+                        <label className="toggle-filter">
+                            <input type="checkbox" style={{display:'none'}} checked={hideVaulted} onChange={(e) => setHideVaulted(e.target.checked)} />
+                            <div className="checkbox-custom">{hideVaulted && '✓'}</div>
+                            HIDE VAULTED
+                        </label>
+                        <label className="toggle-filter">
                             <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
                             <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
                             MISSING
                         </label>
-                         <button className="btn-import" onClick={() => document.getElementById('imp').click()}><span>📂</span> IMPORT</button>
-                         <input type="file" id="imp" className="hidden-file-input" onChange={handleImportAleca} />
                     </div>
                 </div>
                 <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
@@ -1374,8 +1959,6 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
     );
 }
 
-// COMPONENTE PRINCIPALE CHE ESPORTIAMO
-// Avvolge tutto in Suspense per risolvere l'errore di build
 export default function CodexListPage(props) {
     return (
         <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Interface...</div>}>
@@ -1385,12 +1968,124 @@ export default function CodexListPage(props) {
 }
 
 ==================================================
+FILE: src\components\WarframeDetailModal.css
+==================================================
+
+.modal-overlay { 
+  position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); 
+  z-index: 1000; display: flex; align-items: center; justify-content: center; 
+}
+.modal-content-simple { 
+  width: 95vw; height: 90vh; max-width: 1600px; background: #08080a; 
+  border: 1px solid #333; border-radius: 4px; overflow: hidden; position: relative; 
+  box-shadow: 0 0 100px rgba(0,0,0,0.9); display: flex; flex-direction: column;
+}
+.close-btn { position: absolute; top: 20px; right: 25px; color: #fff; font-size: 28px; background: none; border: none; cursor: pointer; z-index: 20; opacity: 0.6; }
+.close-btn:hover { opacity: 1; color: var(--gold); }
+
+.modal-header-row { display: flex; justify-content: space-between; align-items: center; padding: 25px 70px 25px 35px; border-bottom: 1px solid #222; background: #0a0a0c; }
+.modal-title { font-size: 36px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+
+/* BADGES HEADER (Available/Vaulted) - RIPRISTINATI */
+.vault-badge { font-size: 11px; padding: 6px 16px; border-radius: 2px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+.vault-badge.is-vaulted { background: rgba(255, 50, 50, 0.1); color: #ff5555; border: 1px solid rgba(255, 50, 50, 0.3); }
+.vault-badge.is-available { background: rgba(50, 255, 100, 0.05); color: #5fffa5; border: 1px solid rgba(50, 255, 100, 0.2); }
+
+.modal-body { flex: 1; display: flex; overflow: hidden; padding: 0; text-align: left !important; }
+
+/* 3 COLONNE */
+.col-left { 
+  width: 320px; flex-shrink: 0; padding: 30px; 
+  border-right: 1px solid #222; background: #050505 !important; 
+  display: flex; flex-direction: column; align-items: center; overflow-y: auto; 
+}
+.col-center { 
+  flex: 1; padding: 30px; border-right: 1px solid #222; 
+  background: #0b0b0e !important; overflow-y: auto; 
+}
+.col-right { flex: 1.4; padding: 30px; background: #08080a; overflow-y: auto; }
+
+/* BOTTONE AGGIUNGI (STILE GOLD GRANDE) - RIPRISTINATO */
+.btn-toggle-large {
+  width: 100%; padding: 15px; margin-top: 25px;
+  background: var(--gold); color: #000; font-weight: 800; letter-spacing: 1px;
+  border: none; border-radius: 2px; cursor: pointer; text-transform: uppercase;
+  transition: 0.2s;
+}
+.btn-toggle-large:hover { background: #fff; box-shadow: 0 0 15px var(--gold-glow); }
+.btn-toggle-large.owned { background: #222; color: #fff; border: 1px solid #444; }
+
+/* MINI CARDS RELIQUIE */
+.relic-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.mini-relic-card { 
+  background: #1a1a1d; border: 1px solid #333; border-radius: 4px; padding: 8px; 
+  display: flex; flex-direction: row; align-items: center; gap: 12px; 
+  transition: 0.2s; cursor: pointer; overflow: hidden; position: relative;
+}
+.mini-relic-card:hover { border-color: #666; background: #222; transform: translateY(-2px); }
+.mini-relic-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.08); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); opacity: 1 !important; }
+.mini-relic-card.is-vaulted { opacity: 0.6; border-color: #3a2a2a; background: #141010; }
+
+/* IMMAGINE RELIQUIA */
+.relic-card-img { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.relic-icon-svg { width: 28px; height: 28px; fill: #444; flex-shrink: 0; } /* Fallback */
+
+.card-info { display: flex; flex-direction: column; justify-content: center; overflow: hidden; flex: 1; }
+.card-name { font-size: 11px; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-pct { font-size: 10px; font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+
+/* RARITY COLORS (PERCENTUALI) */
+.pct-common { color: #cd7f32; }   /* Bronzo */
+.pct-uncommon { color: #c0c0c0; } /* Argento */
+.pct-rare { color: var(--gold); text-shadow: 0 0 5px rgba(212,175,55,0.4); } /* Oro */
+
+.section-title { color: var(--gold-dim); border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+.warframe-description { font-size: 13px; color: #999; font-style: italic; line-height: 1.5; text-align: center; margin-bottom: 20px; padding: 0 10px; }
+.part-badge { display: inline-block; background: rgba(95, 255, 165, 0.08); border: 1px solid rgba(95, 255, 165, 0.2); color: var(--green-tech); padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.vaulted-mini-tag { font-size: 8px; color: var(--red-vault); background: rgba(255, 85, 85, 0.1); padding: 1px 4px; border-radius: 2px; margin-left: 6px; border: 1px solid rgba(255, 85, 85, 0.3); font-weight: 900; }
+
+.strategy-container { display: flex; flex-direction: column; gap: 15px; }
+.mission-block { background: #121215; border: 1px solid #2a2a2e; border-radius: 4px; padding: 0; overflow: hidden; margin-bottom: 15px; }
+.mission-block-header { background: #18181b; padding: 10px 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+.mission-name-large { font-size: 13px; font-weight: bold; color: #fff; }
+.mission-relics-table { width: 100%; border-collapse: collapse; }
+.mission-relics-table th { text-align: left; font-size: 9px; color: #555; padding: 8px 15px; background: #0e0e10; font-weight: bold; }
+.mission-relics-table td { padding: 10px 15px; border-bottom: 1px solid #1f1f22; font-size: 12px; vertical-align: middle; color: #bbb; }
+.component-row { margin-bottom: 20px; }
+.component-header { display: flex; align-items: center; gap: 10px; background: #18181b; padding: 8px; border: 1px solid #333; margin-bottom: 8px; border-radius: 4px; }
+.component-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.component-icon img { width: 100%; height: 100%; object-fit: contain; }
+.count-badge { font-size: 10px; background: #000; padding: 2px 6px; border-radius: 4px; border: 1px solid #333; color: #666; margin-left: auto; }
+
+/* ... stili precedenti ... */
+
+/* MODALITÀ BASE: Nasconde la colonna di destra */
+.modal-content-simple.base-mode .col-right {
+    display: none;
+}
+
+/* Stile tabella integrata per i Base Warframe */
+.base-mission-table {
+    width: 100%; 
+    border-collapse: collapse;
+}
+.base-mission-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #1a1a1e;
+    font-size: 11px;
+}
+.base-mission-table tr:last-child td {
+    border-bottom: none;
+}
+
+==================================================
 FILE: src\components\WarframeDetailModal.js
 ==================================================
 
 "use client";
 import React, { useEffect, useState } from 'react';
 import { IMG_BASE_URL, API_BASE_URL } from '@/utils/constants';
+import './WarframeDetailModal.css';
 
 const HIDDEN_RESOURCES = [
     'Orokin Cell', 'Argon Crystal', 'Neural Sensors', 'Neurodes', 
@@ -1400,7 +2095,8 @@ const HIDDEN_RESOURCES = [
 ];
 
 export default function WarframeDetailModal({ item, onClose, ownedItems, onToggle }) {
-    const [smartMissions, setSmartMissions] = useState([]);
+    const [smartMissions, setSmartMissions] = useState([]); 
+    const [baseStrategies, setBaseStrategies] = useState([]); 
     const [lookupData, setLookupData] = useState(null); 
     const [savedPartMap, setSavedPartMap] = useState({});
     
@@ -1412,8 +2108,13 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
 
     const isOwned = ownedItems.has(item.uniqueName);
     const isRelicItem = (item.category || "").includes('Relic') || (item.type || "").includes('Relic');
-    const mainDropsEmpty = !item.drops || item.drops.length === 0;
-    const isVaulted = item.vaulted || (isRelicItem && mainDropsEmpty);
+    const isPrime = item.name.includes("Prime");
+    
+    // Logica Vaulted
+    const jsonVaulted = !!item.vaulted;
+    const computedVaulted = !isRelicItem && !loadingStrategies && smartMissions.length === 0 && baseStrategies.length === 0;
+    const isVaulted = jsonVaulted || (isPrime && computedVaulted); 
+
     const wikiUrl = `https://warframe.fandom.com/wiki/${item.name.replace(/ /g, '_')}`;
 
     useEffect(() => {
@@ -1423,6 +2124,8 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
         
         if (!isRelicItem && (item.components || item.drops)) {
             fetchFarmingData();
+        } else {
+            setLoadingStrategies(false);
         }
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose, item]);
@@ -1449,35 +2152,26 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
         return clean.toUpperCase();
     }
 
-    // --- HANDLER SELEZIONE ---
     const handleRelicClick = (relicId) => {
         if (!relicId) return;
         const newSet = new Set(selectedRelics);
-        if (newSet.has(relicId)) {
-            newSet.delete(relicId);
-        } else {
-            newSet.add(relicId);
-        }
+        if (newSet.has(relicId)) newSet.delete(relicId);
+        else newSet.add(relicId);
         setSelectedRelics(newSet);
     };
 
-    const displayedMissions = (selectedRelics.size > 0 && lookupData) 
-        ? calculateMissionsStrategy(selectedRelics, lookupData, savedPartMap)
-        : smartMissions;
-
+    // --- CALCOLATORE STRATEGIA ---
     function calculateMissionsStrategy(relicIdsSet, dbData, partMap) {
         const missionMap = new Map();
-
         relicIdsSet.forEach(relicID => {
-            const missions = dbData[relicID]; 
+            if (relicID.startsWith("DIRECT:")) return; 
+            const relicInfo = dbData ? dbData[relicID] : null; 
+            const missions = relicInfo ? (Array.isArray(relicInfo) ? relicInfo : relicInfo.drops) : [];
             const partName = partMap[relicID] || "PART";
-
             if (missions) {
                 missions.forEach(mission => {
                     const key = mission.node;
-                    if (!missionMap.has(key)) {
-                        missionMap.set(key, { missionName: key, totalScore: 0, relicsFound: [] });
-                    }
+                    if (!missionMap.has(key)) missionMap.set(key, { missionName: key, totalScore: 0, relicsFound: [] });
                     const entry = missionMap.get(key);
                     let relicEntry = entry.relicsFound.find(r => r.id === relicID);
                     if (!relicEntry) {
@@ -1493,15 +2187,27 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                 });
             }
         });
+        return Array.from(missionMap.values()).sort((a, b) => b.totalScore - a.totalScore).slice(0, 15);
+    }
 
-        return Array.from(missionMap.values())
-            .sort((a, b) => {
-                const uniquePartsA = new Set(a.relicsFound.map(r => r.part)).size;
-                const uniquePartsB = new Set(b.relicsFound.map(r => r.part)).size;
-                if (uniquePartsB !== uniquePartsA) return uniquePartsB - uniquePartsA;
-                return b.totalScore - a.totalScore;
-            })
-            .slice(0, 15);
+    function calculateBaseStrategy(relicIdsSet) {
+        const componentMap = new Map(); 
+        relicIdsSet.forEach(relicID => {
+            if (relicID.startsWith("DIRECT:")) {
+                const info = JSON.parse(relicID.substring(7)); 
+                const part = info.part; 
+                if (!componentMap.has(part)) componentMap.set(part, []);
+                const list = componentMap.get(part);
+                if (!list.some(m => m.loc === info.loc && m.rot === info.rarity)) {
+                    list.push({ loc: info.loc, rot: info.rarity || "-", chance: info.chance || 0 });
+                }
+            }
+        });
+        const strategyObj = {};
+        componentMap.forEach((missions, part) => {
+            strategyObj[part] = missions.sort((a, b) => b.chance - a.chance).slice(0, 5);
+        });
+        return strategyObj;
     }
 
     async function fetchFarmingData() {
@@ -1510,79 +2216,120 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
         try {
             const neededIDs = new Set();
             const relicToPartMap = {}; 
+            
             const scan = (drops, partNameLabel) => {
                 (drops || []).forEach(d => {
                     const id = getStandardID(d.location);
-                    if (id) { neededIDs.add(id); relicToPartMap[id] = getCleanPartName(partNameLabel); }
+                    const cleanPart = getCleanPartName(partNameLabel);
+                    if (id) { neededIDs.add(id); relicToPartMap[id] = cleanPart; } 
+                    else {
+                        const fakeID = `DIRECT:${JSON.stringify({ loc: d.location, part: cleanPart, chance: d.chance, rarity: d.rarity })}`;
+                        neededIDs.add(fakeID);
+                    }
                 });
             };
+
             (item.components || []).forEach(c => { if(!HIDDEN_RESOURCES.includes(c.name)) scan(c.drops, c.name); });
             scan(item.drops, "MAIN BP");
-
             setSavedPartMap(relicToPartMap);
 
             if (neededIDs.size === 0) { setLoadingStrategies(false); return; }
 
-            const res = await fetch(`${API_BASE_URL}/RelicLookup.json`);
-            if (!res.ok) throw new Error("Missing DB");
-            const lookupDB = await res.json();
+            const [lookupRes, relicsRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/RelicLookup.json`),
+                fetch(`${API_BASE_URL}/Relics.json`)
+            ]);
+
+            let lookupDB = {}; if (lookupRes.ok) lookupDB = await lookupRes.json();
+            let imageMap = {};
+            if (relicsRes.ok) {
+                const relicsArr = await relicsRes.json();
+                relicsArr.forEach(r => {
+                    const stdName = getStandardID(r.name);
+                    if (stdName && r.imageName) imageMap[stdName] = r.imageName;
+                });
+            }
+            lookupDB._images = imageMap;
             setLookupData(lookupDB); 
 
-            const initialStrategies = calculateMissionsStrategy(neededIDs, lookupDB, relicToPartMap);
-            setSmartMissions(initialStrategies);
+            setSmartMissions(calculateMissionsStrategy(neededIDs, lookupDB, relicToPartMap));
+            setBaseStrategies(calculateBaseStrategy(neededIDs));
 
         } catch (e) { console.error(e); setStatusMsg("N/A"); } finally { setLoadingStrategies(false); }
     }
 
-    // --- LOGICA FORMATTAZIONE COMPONENTI E VAULT STATUS ---
+    // --- RENDER HELPERS ---
     function formatDropsWithVaultCheck(drops) {
         if(!drops || drops.length === 0) return [];
         const unique = new Map();
-        
         drops.forEach(d => {
-            let locRaw = d.location || "";
-            let isRelic = locRaw.toUpperCase().match(/(LITH|MESO|NEO|AXI|REQUIEM)\s+[A-Z0-9]+/);
-            if (isRelic && locRaw.match(/(Radiant|Flawless|Exceptional)/i)) return;
-            
-            let loc = locRaw.replace(' Relic', '').replace(' (Intact)', '').trim();
-            let imagePath = null;
-            let relicID = null;
-            let isVaultedRelic = false;
-
-            if (isRelic) {
-                const slug = loc.toLowerCase().replace(/ /g, '-') + '-relic.png';
-                imagePath = `${IMG_BASE_URL}/${slug}`;
-                relicID = getStandardID(loc);
+            let loc = d.location;
+            let isRelic = loc.toUpperCase().match(/(LITH|MESO|NEO|AXI|REQUIEM)\s+[A-Z0-9]+/);
+            if(isRelic && loc.match(/(Radiant|Flawless|Exceptional)/i)) return; 
+            if(isRelic) {
+                let cleanLoc = loc.replace(' Relic', '').replace(' (Intact)', '').trim();
+                let relicID = getStandardID(cleanLoc);
+                let imagePath = null;
+                let isVaultedRelic = false;
                 
-                // CHECK VAULT: Se il DB è caricato e l'ID non c'è, è Vaulted
-                if (lookupData && relicID && !lookupData[relicID]) {
-                    isVaultedRelic = true;
+                if (lookupData && lookupData._images && lookupData._images[relicID]) {
+                    imagePath = `${IMG_BASE_URL}/${lookupData._images[relicID]}`;
+                } else {
+                    imagePath = `${IMG_BASE_URL}/${cleanLoc.toLowerCase().replace(/ /g, '-')}-relic.png`;
+                }
+                if (lookupData && relicID && !lookupData[relicID]) isVaultedRelic = true;
+
+                if(!unique.has(cleanLoc)) {
+                    unique.set(cleanLoc, {
+                        loc: cleanLoc, isRelic: true, imagePath, relicID, isVaultedRelic,
+                        rarityClass: getRarityClass(d.rarity)
+                    });
                 }
             }
-
-            if(!unique.has(loc)) {
-                unique.set(loc, {
-                    loc, isRelic, imagePath, relicID, isVaultedRelic,
-                    pct: isRelic ? getIntactChance(d.rarity) : (d.chance ? `${(d.chance*100).toFixed(0)}%` : "-"),
-                    chance: d.chance || 0
-                });
-            }
         });
-
-        // ORDINAMENTO: Prima le disponibili, poi le vaulted, poi per chance
-        return Array.from(unique.values()).sort((a, b) => {
-            if (a.isVaultedRelic !== b.isVaultedRelic) return a.isVaultedRelic ? 1 : -1; // False (Available) first
-            return b.chance - a.chance;
-        });
+        return Array.from(unique.values()).sort((a,b) => (a.isVaultedRelic === b.isVaultedRelic) ? 0 : a.isVaultedRelic ? 1 : -1);
     }
 
+    // --- COSTRUZIONE LISTA COMPONENTI (FIX PRIME MAIN BP) ---
+    let fullComponentsList = [];
+    if (!isRelicItem) {
+        // 1. Cerca se esiste un componente chiamato "Blueprint" nei dati
+        const foundBpComponent = (item.components || []).find(c => c.name.toLowerCase().includes('blueprint'));
+        
+        // 2. Determina i drop corretti per il Main BP
+        // Se c'è un componente blueprint, usiamo i suoi drop. Altrimenti usiamo i drop generali dell'item.
+        const mainBpDrops = foundBpComponent ? foundBpComponent.drops : (item.drops || []);
+
+        // 3. Aggiungi il blocco "MAIN BP" in cima alla lista
+        fullComponentsList.push({
+            uniqueName: item.uniqueName + "_BP",
+            name: "MAIN BP",
+            itemCount: 1,
+            imageName: item.imageName,
+            drops: mainBpDrops // Ora contiene i drop corretti anche per i Prime!
+        });
+
+        // 4. Aggiungi gli altri componenti (Escludendo "Blueprint" perché l'abbiamo appena gestito manualmente)
+        const subs = (item.components || []).filter(comp => 
+            !HIDDEN_RESOURCES.includes(comp.name) && 
+            !comp.name.toLowerCase().includes('blueprint') 
+        );
+        fullComponentsList = [...fullComponentsList, ...subs];
+    }
+    
+    const hasComponents = fullComponentsList.length > 0;
     const sortedRewards = item.rewards ? [...item.rewards].sort((a, b) => (b.chance || 0) - (a.chance || 0)) : [];
-    const filteredComponents = (item.components || []).filter(comp => !HIDDEN_RESOURCES.includes(comp.name));
-    const hasComponents = filteredComponents.length > 0;
+
+    function getRarityClass(r) {
+        if(!r) return ""; r = r.toLowerCase();
+        if(r.includes('rare')) return "pct-rare";
+        if(r.includes('uncommon')) return "pct-uncommon";
+        return "pct-common";
+    }
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content-simple" onClick={(e) => e.stopPropagation()}>
+            <div className={`modal-content-simple ${!isPrime && !isRelicItem ? 'base-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
                 <button className="close-btn" onClick={onClose}>&times;</button>
 
                 <div className="modal-header-row">
@@ -1594,6 +2341,7 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                 </div>
 
                 <div className="modal-body">
+                    {/* COLONNA 1: INFO */}
                     <div className="col-left">
                         <div style={{width:'100%', display:'flex', justifyContent:'center', marginBottom:'20px'}}>
                             <img src={`${IMG_BASE_URL}/${item.imageName}`} alt={item.name} style={{maxWidth:'100%', maxHeight:'250px'}} onError={(e)=>e.target.style.display='none'} />
@@ -1605,8 +2353,10 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                         <a href={wikiUrl} target="_blank" rel="noopener noreferrer" className="wiki-btn-block">WIKI PAGE</a>
                     </div>
 
-                    <div className="col-center">
-                        <h3 className="section-title">{isRelicItem ? "REWARDS" : "COMPONENTS"}</h3>
+                    {/* COLONNA 2: COMPONENTI (Si espande se è Base Warframe) */}
+                    <div className="col-center" style={{flex: !isPrime && !isRelicItem ? 2 : 1}}>
+                        <h3 className="section-title">{isRelicItem ? "REWARDS" : "COMPONENTS & ACQUISITION"}</h3>
+                        
                         {isRelicItem && (
                             <div style={{display:'flex', flexDirection:'column', gap:'5px'}}>
                                 {sortedRewards.map((r, i) => (
@@ -1617,63 +2367,80 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                                 ))}
                             </div>
                         )}
-                        {!isRelicItem && hasComponents && (
-                            <div style={{display:'flex', flexDirection:'column', gap:'15px'}}>
-                                {filteredComponents.map((comp, idx) => (
-                                    <div key={idx} className="component-row">
-                                        <div className="component-header">
-                                            <div className="component-icon"><img src={`${IMG_BASE_URL}/${comp.imageName}`} alt=""/></div>
-                                            <div style={{flex:1}}>
-                                                <strong style={{color:'#eee', fontSize:'13px'}}>{getCleanPartName(comp.name)}</strong>
-                                            </div>
-                                            <span className="count-badge">x{comp.itemCount}</span>
+
+                        {!isRelicItem && fullComponentsList.map((comp, idx) => {
+                            const cleanName = getCleanPartName(comp.name);
+                            const partMissions = baseStrategies[cleanName] || [];
+                            
+                            return (
+                                <div key={idx} className="component-row">
+                                    <div className="component-header">
+                                        <div className="component-icon"><img src={`${IMG_BASE_URL}/${comp.imageName}`} alt="" style={{opacity: comp.name === "MAIN BP" ? 0.7 : 1}}/></div>
+                                        <div style={{flex:1}}>
+                                            <strong style={{color:'#eee', fontSize:'13px'}}>{cleanName}</strong>
                                         </div>
+                                        <span className="count-badge">x{comp.itemCount}</span>
+                                    </div>
+
+                                    {/* SE È PRIME: MOSTRA LE RELIQUIE (Grid) */}
+                                    {isPrime && (
                                         <div className="relic-cards-grid">
                                             {formatDropsWithVaultCheck(comp.drops).map((d, i) => {
                                                 const isSelected = d.relicID && selectedRelics.has(d.relicID);
-                                                
                                                 return (
-                                                    <div 
-                                                        key={i} 
-                                                        onClick={() => d.isRelic && handleRelicClick(d.relicID)}
-                                                        className={`mini-relic-card ${!d.isRelic ? 'is-mission' : ''} ${isSelected ? 'selected' : ''} ${d.isVaultedRelic ? 'is-vaulted' : ''}`}
+                                                    <div key={i} onClick={() => d.isRelic && handleRelicClick(d.relicID)}
+                                                        className={`mini-relic-card ${isSelected ? 'selected' : ''} ${d.isVaultedRelic ? 'is-vaulted' : ''}`}
                                                     >
-                                                        {/* ICONA ESAGONO / FIAMMA */}
-                                                        <svg className="relic-icon-svg" viewBox="0 0 24 24">
-                                                            {d.isRelic ? (
-                                                                <path d="M14.5 2C13.5 2 12.5 2.5 12 3.5C11.5 2.5 10.5 2 9.5 2C6 2 4 5 4 8C4 11 6 13 8 16C9 17.5 10 19.5 10 22H14C14 19.5 15 17.5 16 16C18 13 20 11 20 8C20 5 18 2 14.5 2ZM12 17C10.5 15 9 13.5 9 11C9 9.5 10 8.5 12 8.5C14 8.5 15 9.5 15 11C15 13.5 13.5 15 12 17Z" />
-                                                            ) : (
-                                                                <path d="M12 2L2 12l10 10 10-10L12 2zm0 18l-8-8 8-8 8 8-8 8z"/>
-                                                            )}
-                                                        </svg>
+                                                        {d.imagePath && <img src={d.imagePath} className="relic-card-img" onError={(e)=>{e.target.style.display='none'}} />}
                                                         <div className="card-info">
                                                             <span className="card-name">{d.loc}</span>
-                                                            <span className="card-pct">
-                                                                {d.pct}
-                                                                {d.isVaultedRelic && <span className="vaulted-mini-tag">V</span>}
-                                                            </span>
+                                                            <span className={`card-pct ${d.rarityClass}`}>{d.isVaultedRelic && <span className="vaulted-mini-tag">V</span>}</span>
                                                         </div>
                                                     </div>
                                                 );
                                             })}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    )}
+
+                                    {/* SE È BASE: MOSTRA TABELLA MISSIONI DIRETTAMENTE QUI */}
+                                    {!isPrime && (
+                                        <div style={{marginTop:'5px', background:'#121215', border:'1px solid #333', borderRadius:'4px', overflow:'hidden'}}>
+                                            {partMissions.length > 0 ? (
+                                                <table className="mission-relics-table">
+                                                    <tbody>
+                                                        {partMissions.map((m, i) => (
+                                                            <tr key={i}>
+                                                                <td style={{color:'#fff', fontSize:'11px', padding:'6px 10px'}}>{m.loc}</td>
+                                                                <td style={{textAlign:'center', color:'var(--gold)', fontSize:'11px', width:'50px'}}>{m.rot}</td>
+                                                                <td style={{textAlign:'right', color:'#888', fontSize:'11px', width:'60px'}}>{(m.chance*100).toFixed(1)}%</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            ) : (
+                                                <div style={{padding:'10px', fontSize:'11px', color:'#555', fontStyle:'italic', textAlign:'center'}}>
+                                                    Check Market / Dojo / Quest
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
-                    <div className="col-right">
-                        <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'10px'}}>
-                            <h3 className="section-title" style={{color:'var(--gold)', margin:0}}>
-                                {loadingStrategies ? statusMsg : (selectedRelics.size > 0 ? `FILTERED FARMING (${selectedRelics.size})` : "OPTIMAL FARMING LOCATIONS")}
-                            </h3>
-                            {selectedRelics.size > 0 && <span style={{fontSize:'10px', color:'#666', cursor:'pointer'}} onClick={()=>setSelectedRelics(new Set())}>(CLEAR FILTERS)</span>}
-                        </div>
-
-                        {!isRelicItem && displayedMissions.length > 0 ? (
+                    {/* COLONNA 3: STRATEGIA (SOLO PER PRIME) */}
+                    {isPrime && !isRelicItem && (
+                        <div className="col-right">
+                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:'10px'}}>
+                                <h3 className="section-title" style={{color:'var(--gold)', margin:0}}>
+                                    {loadingStrategies ? statusMsg : (selectedRelics.size > 0 ? `FILTERED FARMING` : "OPTIMAL LOCATIONS")}
+                                </h3>
+                                {selectedRelics.size > 0 && <span style={{fontSize:'10px', color:'#666', cursor:'pointer'}} onClick={()=>setSelectedRelics(new Set())}>(CLEAR)</span>}
+                            </div>
+                            
                             <div className="strategy-container">
-                                {displayedMissions.map((mission, idx) => (
+                                {smartMissions.length > 0 ? smartMissions.map((mission, idx) => (
                                     <div key={idx} className="mission-block">
                                         <div className="mission-block-header">
                                             <div className="mission-name-large">{mission.missionName}</div>
@@ -1685,7 +2452,7 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                                                     <th style={{width:'30%'}}>RELIC</th>
                                                     <th style={{width:'20%', textAlign:'center'}}>PART</th>
                                                     <th style={{width:'20%', textAlign:'center'}}>ROT</th>
-                                                    <th style={{width:'30%', textAlign:'right'}}>CHANCE</th>
+                                                    <th style={{width:'30%', textAlign:'right'}}>%</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1693,33 +2460,21 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                                                     <tr key={i}>
                                                         <td style={{color:'#fff', fontWeight:'bold'}}>{r.id}</td>
                                                         <td style={{textAlign:'center'}}><span className="part-badge">{r.part}</span></td>
-                                                        <td style={{textAlign:'center', color:'var(--gold)'}}>{(r.drops||[]).map(d=>d.rot).join(' | ')}</td>
-                                                        <td style={{textAlign:'right', color:'#aaa'}}>{(r.drops||[]).map(d=>(d.chance*100).toFixed(1)+'%').join(' | ')}</td>
+                                                        <td style={{textAlign:'center', color:'var(--gold)'}}>{(r.drops||[]).map(d=>d.rot).join('|')}</td>
+                                                        <td style={{textAlign:'right', color:'#aaa'}}>{(r.drops||[]).map(d=>(d.chance*100).toFixed(0)).join('|')}%</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                ))}
+                                )) : <div style={{textAlign:'center', padding:'40px', color:'#555', fontStyle:'italic'}}>No farming data available (Vaulted).</div>}
                             </div>
-                        ) : (
-                            <div style={{textAlign:'center', padding:'40px', color:'#555', fontStyle:'italic'}}>
-                                {!loadingStrategies && (selectedRelics.size > 0 ? "Selected relics are Vaulted or have no drop data." : "No farming data available.")}
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
-}
-
-function getIntactChance(r) {
-    if(!r) return "-";
-    r = r.toLowerCase();
-    if(r.includes('rare')) return "2%";
-    if(r.includes('uncommon')) return "11%";
-    return "25%";
 }
 
 ==================================================

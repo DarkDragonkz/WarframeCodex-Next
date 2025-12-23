@@ -1,11 +1,17 @@
 "use client";
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-// Assicurati che questo file esista nella stessa cartella!
+import { useRouter } from 'next/navigation';
+// Importiamo le costanti del progetto per coerenza (API e Immagini)
+import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
+// Importiamo lo stile globale del layout HUD
+import '@/app/hud-layout.css'; 
+// Importiamo lo stile specifico per le carte mod
 import './mods.css';
 
 const STORAGE_KEY = 'warframe_codex_mods_v1';
 
-function ModsPage() {
+export default function ModsPage() {
+    const router = useRouter();
     const [rawApiData, setRawApiData] = useState([]);
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
@@ -18,74 +24,75 @@ function ModsPage() {
 
     // Infinite Scroll
     const [visibleCount, setVisibleCount] = useState(60);
-    const scrollRef = useRef(null);
-
-    // 1. Caricamento Dati API
+    
+    // --- 1. LOGICA DI CARICAMENTO (COERENTE CON IL RESTO DEL SITO) ---
     useEffect(() => {
         let isMounted = true;
-        
         async function loadData() {
             setLoading(true);
             try {
-                // Fetch parallelo dei dati
+                // Fetch dai file JSON locali (API_BASE_URL) invece che da unpkg
                 const [modsRes, arcanesRes] = await Promise.all([
-                    fetch('https://unpkg.com/warframe-items/data/json/Mods.json'),
-                    fetch('https://unpkg.com/warframe-items/data/json/Arcanes.json')
+                    fetch(`${API_BASE_URL}/Mods.json`),
+                    fetch(`${API_BASE_URL}/Arcanes.json`)
                 ]);
                 
                 if (!isMounted) return;
+
+                // Gestione errori se i file non esistono
+                if (!modsRes.ok || !arcanesRes.ok) throw new Error("Impossible to load Mods/Arcanes local DB");
 
                 const modsData = await modsRes.json();
                 const arcanesData = await arcanesRes.json();
                 const combined = [...modsData, ...arcanesData];
 
-                // Processiamo i dati
                 const processed = [];
                 const ids = new Set();
 
                 combined.forEach(item => {
+                    // Filtri di pulizia base
                     if (!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
+                    if (item.uniqueName && item.uniqueName.toLowerCase().includes("setmod")) return; 
                     if (ids.has(item.name)) return; 
                     
                     ids.add(item.name);
                     
+                    // Pre-calcolo stringa ricerca
                     const dropLocs = item.drops ? item.drops.map(d => d.location).join(" ") : "";
                     item.searchString = `${item.name} ${item.type} ${item.category || ""} ${dropLocs}`.toLowerCase();
+                    
+                    // Normalizziamo i dati per il componente ModCard
+                    // Calcolo Max Rank (fusionLimit)
+                    item.maxRank = item.fusionLimit || (item.levelStats ? item.levelStats.length - 1 : 5);
                     
                     processed.push(item);
                 });
 
+                // Ordinamento alfabetico iniziale
+                processed.sort((a, b) => a.name.localeCompare(b.name));
                 setRawApiData(processed);
                 
-                // Carica salvataggi SOLO lato client
+                // Load LocalStorage
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
-                    try {
-                        setOwnedCards(new Set(JSON.parse(saved)));
-                    } catch (e) {
-                        console.error("Error parsing saved mods", e);
-                    }
+                    try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) { console.error(e); }
                 }
 
-            } catch (e) {
-                console.error("Error loading mods:", e);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
+            } catch (e) { console.error("Error loading mods:", e); } 
+            finally { if (isMounted) setLoading(false); }
         }
         loadData();
-
         return () => { isMounted = false; };
     }, []);
 
-    // 2. Salvataggio automatico (Solo quando loading è finito)
+    // 2. Salvataggio automatico
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedCards]));
         }
     }, [ownedCards, loading]);
 
-    // 3. Filtraggio
+    // 3. Filtraggio (Logica originale mantenuta)
     const filteredData = useMemo(() => {
         let data = rawApiData.filter(item => {
             if (searchTerm && !item.searchString.includes(searchTerm)) return false;
@@ -136,89 +143,92 @@ function ModsPage() {
         return data;
     }, [rawApiData, currentCategory, searchTerm, currentSort, showMissingOnly, ownedCards]);
 
-    // Handlers
-    const handleScroll = (e) => {
-        if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) {
-            setVisibleCount(prev => prev + 60);
-        }
-    };
-
     const toggleOwned = (id) => {
         const newSet = new Set(ownedCards);
-        if (newSet.has(id)) newSet.delete(id);
-        else newSet.add(id);
+        if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
         setOwnedCards(newSet);
-    };
-
-    const resetData = () => {
-        if(confirm("Reset all mods progress?")) {
-            setOwnedCards(new Set());
-        }
     };
 
     const pct = rawApiData.length > 0 ? Math.round((ownedCards.size / rawApiData.length) * 100) : 0;
 
-    // --- RENDER ---
     return (
-        <div className="mods-container">
-            {/* NAVIGATION */}
-            <div className="mods-header-group">
-                <div style={{display:'flex', gap:'5px', padding:'0 20px', overflowX:'auto', scrollbarWidth:'none', height:'50px'}}>
-                    {['all','warframe','aura','augment','arcane','primary','secondary','melee','exilus','companion','archwing'].map(cat => (
-                        <button 
-                            key={cat}
-                            className={`mods-nav-item ${currentCategory === cat ? 'active' : ''}`}
-                            onClick={() => { setCurrentCategory(cat); setVisibleCount(60); }}
-                        >
-                            {cat.toUpperCase()}
-                        </button>
-                    ))}
-                </div>
-                <div style={{width:'100%', height:'3px', background:'#222'}}>
-                    <div style={{height:'100%', background:'var(--rare)', width:`${pct}%`, transition:'0.5s'}}></div>
-                </div>
-            </div>
-
-            {/* CONTROLS */}
-            <div className="mods-stats-bar">
-                <div className="mods-controls-left">
-                    <div style={{position:'relative'}}>
-                        <input 
-                            type="text" 
-                            className="mods-search-input" 
-                            placeholder="SEARCH..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
-                        />
+        <div className="codex-layout">
+            <div className="header-group">
+                {/* TOP ROW: HOME, TITLE, STATS */}
+                <div className="nav-top-row">
+                    <div className="nav-brand">
+                        <a href="/" className="nav-home-btn">⌂ HOME</a>
+                        <h1 className="page-title">MODS & ARCANES</h1>
                     </div>
-
-                    <select className="mods-sort-select" onChange={(e) => setCurrentSort(e.target.value)}>
-                        <option value="name">Sort: A-Z</option>
-                        <option value="rarity">Sort: Rarity</option>
-                        <option value="drain">Sort: Cost</option>
-                        <option value="chance">Sort: % Drop</option>
-                    </select>
-
-                    <label className="mods-toggle">
-                        <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
-                        <div className="mods-toggle-box">{showMissingOnly ? '✔' : ''}</div> Missing
-                    </label>
-
-                    <button className="mods-btn-action" onClick={resetData} style={{color:'#ff6b6b', borderColor:'#ff6b6b'}}>RESET</button>
+                    <div className="stats-right">
+                        <div className="stat-box">
+                            <div className="stat-label">COLLECTED</div>
+                            <div className="stat-value"><span>{ownedCards.size}</span> / {rawApiData.length}</div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">COMPLETION</div>
+                            <div className="stat-value">{pct}%</div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div style={{textAlign:'right', fontSize:'14px'}}>
-                    <span style={{color:'#fff', fontWeight:'bold'}}>{ownedCards.size}</span> / <span style={{color:'#666'}}>{rawApiData.length}</span>
-                    <span style={{color:'var(--rare)', fontWeight:'bold', marginLeft:'5px'}}>{pct}%</span>
+
+                {/* CONTROLS ROW */}
+                <div className="controls-row">
+                    <div className="filters-left" style={{overflowX:'auto', maxWidth:'60%'}}>
+                        <div className="category-tabs" style={{flexWrap:'nowrap'}}>
+                            {['all','warframe','aura','augment','arcane','primary','secondary','melee','exilus','companion','archwing'].map(cat => (
+                                <button 
+                                    key={cat}
+                                    className={`tab-btn ${currentCategory === cat ? 'active' : ''}`}
+                                    onClick={() => { setCurrentCategory(cat); setVisibleCount(60); }}
+                                >
+                                    {cat.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="filters-right">
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" className="search-input" placeholder="SEARCH..." 
+                                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} 
+                            />
+                        </div>
+
+                        <select 
+                            className="search-input" 
+                            style={{width:'auto', cursor:'pointer'}}
+                            value={currentSort}
+                            onChange={(e) => setCurrentSort(e.target.value)}
+                        >
+                            <option value="name">NAME</option>
+                            <option value="rarity">RARITY</option>
+                            <option value="drain">COST</option>
+                            <option value="chance">DROP %</option>
+                        </select>
+
+                        <label className="toggle-filter">
+                            <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
+                            <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
+                            MISSING
+                        </label>
+                    </div>
                 </div>
+                <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
             </div>
 
-            {/* GALLERY */}
-            <div className="mods-gallery-container" onScroll={handleScroll} ref={scrollRef}>
+            {/* GALLERY SCROLL AREA */}
+            <div 
+                className="gallery-scroll-area" 
+                onScroll={(e) => {
+                    if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
+                }}
+            >
                 {loading ? (
-                    <div className="mods-loading">Reading Database...</div>
+                    <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>INITIALIZING ORDIS DATABASE...</div>
                 ) : (
-                    <div className="mods-card-gallery">
+                    <div className="card-gallery">
                         {filteredData.slice(0, visibleCount).map(item => (
                             <ModCard 
                                 key={item.uniqueName} 
@@ -234,20 +244,21 @@ function ModsPage() {
     );
 }
 
-// --- SUB-COMPONENT: MOD CARD ---
+// --- MOD CARD COMPONENT ---
 function ModCard({ item, isOwned, onToggle }) {
     const [flipped, setFlipped] = useState(false);
     const [rank, setRank] = useState(0);
-    const maxRank = item.fusionLimit || 5;
+    const maxRank = item.maxRank || 5; 
 
-    // Helper descrizione dinamica
+    // Helper per descrizione dinamica
     const getDescription = () => {
         let desc = item.description || "";
         if (item.levelStats && item.levelStats.length > 0) {
+            // Usa levelStats se disponibile
             const statIndex = Math.min(rank, item.levelStats.length - 1);
             return item.levelStats[statIndex].stats.join('<br>');
         }
-        // Fallback regex
+        // Fallback regex se levelStats manca
         return desc.replace(/(\d+(\.\d+)?)/g, (match) => {
             const maxVal = parseFloat(match);
             const baseVal = maxVal / (maxRank + 1);
@@ -256,9 +267,10 @@ function ModCard({ item, isOwned, onToggle }) {
         }).replace(/\r\n|\n/g, "<br>");
     };
 
-    const displayDesc = getDescription();
     const currentDrain = (item.baseDrain || 0) + rank;
-    const imgUrl = `https://cdn.warframestat.us/img/${encodeURIComponent(item.imageName)}`;
+    
+    // ** MODIFICA CHIAVE: Uso IMG_BASE_URL locale invece del CDN esterno **
+    const imgUrl = `${IMG_BASE_URL}/${item.imageName}`;
     
     const rarity = item.rarity || "Common";
     let nameColor = '#fff';
@@ -266,19 +278,16 @@ function ModCard({ item, isOwned, onToggle }) {
     if (rarity === 'Legendary') nameColor = '#b0c9ec';
     if (item.category === 'Arcanes') nameColor = '#00ffcc';
 
-    // Gestione Drops Retro
+    // Helper Drops
     const renderDrops = () => {
-        if (!item.drops || item.drops.length === 0) return <div style={{textAlign:'center', color:'#666', marginTop:'20px'}}>Source Unknown / Quest / Market</div>;
-        
+        if (!item.drops || item.drops.length === 0) return <div className="mod-no-drop">Source Unknown / Quest / Market</div>;
         return item.drops.slice(0, 8).map((d, i) => (
             <div key={i} className="mod-drop-row">
                 <div className="mod-drop-header">
-                    <span style={{fontSize:'11px', color:'#ddd', fontWeight:'bold'}}>{d.location}</span>
-                    <span style={{fontSize:'10px', color:'#aaa'}}>{(d.chance * 100).toFixed(2)}%</span>
+                    <span className="mod-drop-loc">{d.location}</span>
+                    <span className="mod-drop-pct">{(d.chance * 100).toFixed(2)}%</span>
                 </div>
-                <div style={{width:'100%', height:'3px', background:'#222', borderRadius:'2px'}}>
-                    <div style={{width:`${Math.min(100, d.chance * 100 * 4)}%`, height:'100%', background:'var(--mission)'}}></div>
-                </div>
+                <div className="mod-drop-bar-bg"><div className="mod-drop-bar-fill" style={{width:`${Math.min(100, d.chance * 100 * 4)}%`}}></div></div>
             </div>
         ));
     };
@@ -300,13 +309,20 @@ function ModCard({ item, isOwned, onToggle }) {
                     </div>
                     
                     <div className="mod-card-img-container">
-                        <img src={imgUrl} className="mod-card-img" alt={item.name} loading="lazy" />
+                        <img 
+                            src={imgUrl} 
+                            className="mod-card-img" 
+                            alt={item.name} 
+                            loading="lazy" 
+                            // Fallback se l'immagine locale manca (opzionale)
+                            onError={(e)=>{e.target.style.display='none';}} 
+                        />
                     </div>
 
                     <div className="mod-info-area">
                         <div className="mod-type-pill">{item.type}</div>
                         <div className="mod-name" style={{color: nameColor}}>{item.name}</div>
-                        <div className="mod-desc" dangerouslySetInnerHTML={{__html: displayDesc}}></div>
+                        <div className="mod-desc" dangerouslySetInnerHTML={{__html: getDescription()}}></div>
 
                         <div className="mod-rank-controls" onClick={(e) => e.stopPropagation()}>
                             <button className="mod-rank-btn" onClick={() => setRank(Math.max(0, rank - 1))}>-</button>
@@ -324,7 +340,7 @@ function ModCard({ item, isOwned, onToggle }) {
                 <div className="mod-card-back">
                     <div className="mod-back-header">
                         <div className="mod-back-title">ACQUISITION</div>
-                        {item.tradable && <span style={{fontSize:'9px', color:'#2ecc71', border:'1px solid #2ecc71', padding:'2px'}}>TRADE</span>}
+                        {item.tradable && <span className="mod-trade-badge">TRADE</span>}
                     </div>
                     <div className="mod-source-content">
                         {renderDrops()}
@@ -337,6 +353,3 @@ function ModCard({ item, isOwned, onToggle }) {
         </div>
     );
 }
-
-// Export Finale (IMPORTANTE PER NEXT.JS)
-export default ModsPage;

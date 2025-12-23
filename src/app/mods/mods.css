@@ -1,104 +1,140 @@
 /* src/app/mods/mods.css */
 
-/* VARIABILI SPECIFICHE PER MODS */
+/* --- LEGENDA & COLORS --- */
+.legend-box {
+    display: flex; gap: 15px; margin-right: 20px;
+    background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px; border: 1px solid #333;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: bold; color: #888; }
+.dot-leg { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.dot-leg.mission { background: #48dbfb; box-shadow: 0 0 5px #48dbfb; }
+.dot-leg.enemy { background: #ff6b6b; box-shadow: 0 0 5px #ff6b6b; }
+.dot-leg.shop { background: #feca57; box-shadow: 0 0 5px #feca57; }
+
+/* VARS LOCALI PER I COLORI */
 .mods-container {
-    --bg-deep: #0a0a0c; --bg-card: #151515; --text-main: #eeeeee; --text-dim: #888;
-    --common: #a89686; --uncommon: #c0c0c0; --rare: #d4af37; --legendary: #b0c9ec; --arcane: #00ffcc;
-    --syndicate: #ff9f43; --special: #a29bfe; --mission: #48dbfb; --enemy: #ff6b6b;
-    --active-blue: #4da6ff; --glass-nav: rgba(15, 15, 20, 0.95); --border-glass: rgba(255, 255, 255, 0.1);
-    
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: radial-gradient(circle at 50% 0%, #1a1c24 0%, #000000 100%);
-    font-family: 'Roboto Condensed', sans-serif;
-    color: var(--text-main);
-    overflow: hidden;
+    --mission: #48dbfb;
+    --enemy: #ff6b6b;
 }
 
-/* NAVIGATION */
-.mods-header-group { width: 100%; flex-shrink: 0; z-index: 50; background: var(--glass-nav); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-glass); box-shadow: 0 4px 30px rgba(0,0,0,0.8); }
-.mods-nav-bar { display: flex; gap: 5px; height: 50px; align-items: center; overflow-x: auto; padding: 0 20px; justify-content: center; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.mods-nav-item { background: transparent; border: none; cursor: pointer; color: var(--text-dim); height: 100%; padding: 0 15px; position: relative; font-family: inherit; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; transition: 0.2s; }
-.mods-nav-item:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-.mods-nav-item.active { color: var(--rare); }
-.mods-nav-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--rare); box-shadow: 0 -2px 10px var(--rare); }
+/* --- CARD DESIGN --- */
+.mod-card-wrapper { 
+    width: 220px; height: 340px; 
+    perspective: 1000px; cursor: default; 
+    position: relative; margin-bottom: 10px;
+}
 
-/* CONTROLS */
-.mods-stats-bar { width: 100%; max-width: 1800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 10px 30px; box-sizing: border-box; flex-wrap: wrap; gap: 10px; }
-.mods-controls-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-.mods-search-input { background: rgba(0,0,0,0.5); border: 1px solid #444; color: #fff; padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 14px; width: 160px; transition: 0.2s; text-transform: uppercase; }
-.mods-search-input:focus { outline: none; border-color: var(--rare); background: #000; width: 200px; }
-
-.mods-sort-select { background: rgba(0,0,0,0.5); border: 1px solid #444; color: #ccc; padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; outline: none; }
-.mods-btn-action { background: rgba(30,30,30,0.8); border: 1px solid #444; color: #ccc; padding: 6px 12px; font-size: 11px; cursor: pointer; text-transform: uppercase; font-weight: bold; border-radius: 3px; transition: 0.2s; }
-.mods-btn-action:hover { border-color: var(--rare); color: var(--rare); background: rgba(50,50,50,0.9); }
-
-.mods-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold; font-size: 12px; color: #ccc; }
-.mods-toggle-box { width: 16px; height: 16px; border: 1px solid #666; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; border-radius: 3px; }
-.mods-toggle input:checked + .mods-toggle-box { background: var(--rare); border-color: var(--rare); color: #000; }
-
-/* GALLERY */
-.mods-gallery-container { flex-grow: 1; width: 100%; overflow-y: auto; padding: 20px; display: flex; justify-content: center; scroll-behavior: smooth; }
-.mods-card-gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; max-width: 1750px; padding-bottom: 80px; width: 100%; }
-
-/* CARD DESIGN */
-.mod-card-wrapper { width: 240px; height: 340px; perspective: 1000px; cursor: default; }
-.mod-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
+.mod-card-inner { 
+    position: relative; width: 100%; height: 100%; 
+    text-align: center; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    transform-style: preserve-3d; 
+}
 .mod-card-wrapper.flipped .mod-card-inner { transform: rotateY(180deg); }
 
-.mod-card-front, .mod-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; overflow: hidden; background-color: #151515; border: 1px solid #444; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.mod-card-front, .mod-card-back { 
+    position: absolute; width: 100%; height: 100%; 
+    backface-visibility: hidden; border-radius: 6px; overflow: hidden; 
+    background-color: #151515; border: 1px solid #444; 
+    display: flex; flex-direction: column; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+}
 
-/* Rarity Colors */
-.mod-card-wrapper[data-rarity="Common"] .mod-card-front { border-color: var(--common); }
-.mod-card-wrapper[data-rarity="Uncommon"] .mod-card-front { border-color: var(--uncommon); }
-.mod-card-wrapper[data-rarity="Rare"] .mod-card-front { border-color: var(--rare); }
-.mod-card-wrapper[data-rarity="Legendary"] .mod-card-front { border-color: var(--legendary); }
-.mod-card-wrapper[data-rarity="Arcane"] .mod-card-front { border-color: var(--arcane); }
+/* RARITY BORDERS */
+.mod-card-wrapper[data-rarity="Common"] .mod-card-front { border-color: #a89686; }
+.mod-card-wrapper[data-rarity="Uncommon"] .mod-card-front { border-color: #c0c0c0; }
+.mod-card-wrapper[data-rarity="Rare"] .mod-card-front { border-color: #d4af37; }
+.mod-card-wrapper[data-rarity="Legendary"] .mod-card-front { border-color: #b0c9ec; }
+.mod-card-wrapper[data-rarity="Arcane"] .mod-card-front { border-color: #00ffcc; }
 
-.mod-owned-check { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.9); color: #666; width: 40px; height: 35px; font-size: 18px; z-index: 50; cursor: pointer; border-bottom-right-radius: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #444; border-right: 1px solid #444; transition: 0.2s; }
+/* CHECKBOX & DRAIN */
+.mod-owned-check { 
+    position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.9); 
+    color: #666; width: 35px; height: 30px; font-size: 16px; 
+    z-index: 50; cursor: pointer; border-bottom-right-radius: 8px; 
+    display: flex; align-items: center; justify-content: center; 
+    border-bottom: 1px solid #444; border-right: 1px solid #444; 
+    transition: 0.2s; 
+}
 .mod-owned-check:hover { background: #333; color: #fff; }
-.mod-card-wrapper.owned .mod-owned-check { background: var(--rare); color: #000; border-color: var(--rare); }
+.mod-card-wrapper.owned .mod-owned-check { background: var(--blue-energy); color: #fff; border-color: var(--blue-energy); }
 .mod-card-wrapper.owned .mod-card-img { filter: grayscale(100%) brightness(0.5); }
 
-.mod-drain-box { position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.9); color: #fff; padding: 5px 12px; font-weight: bold; font-size: 16px; z-index: 20; border-bottom-left-radius: 15px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #444; border-left: 1px solid #444; }
-.mod-polarity-icon { width: 18px; height: 18px; filter: invert(1); }
+.mod-drain-box { 
+    position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.9); 
+    color: #fff; padding: 4px 10px; font-weight: bold; font-size: 14px; 
+    z-index: 20; border-bottom-left-radius: 8px; 
+    display: flex; align-items: center; gap: 6px; 
+    border-bottom: 1px solid #444; border-left: 1px solid #444; 
+}
 
 .mod-card-img-container { width: 100%; height: 50%; background-color: #000; position: relative; }
 .mod-card-img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
-.mod-info-area { flex-grow: 1; background: #151515; display: flex; flex-direction: column; align-items: center; padding: 10px; position: relative; z-index: 5; justify-content: flex-start; }
-.mod-type-pill { background: #000; border: 1px solid #444; border-radius: 12px; padding: 3px 12px; font-size: 10px; font-weight: bold; color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-.mod-name { font-size: 15px; font-weight: bold; text-transform: uppercase; color: #fff; margin-bottom: 6px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mod-desc { font-size: 11px; color: #ccc; text-align: center; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; width: 100%; flex-grow: 1; }
+.mod-info-area { 
+    flex-grow: 1; background: #151515; 
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 10px; position: relative; z-index: 5; justify-content: flex-start; 
+}
+.mod-type-pill { 
+    background: #000; border: 1px solid #444; border-radius: 12px; 
+    padding: 2px 10px; font-size: 9px; font-weight: bold; 
+    color: #bbb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; 
+}
+.mod-name { 
+    font-size: 13px; font-weight: 800; text-transform: uppercase; 
+    color: #fff; margin-bottom: 4px; text-align: center; 
+    width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+}
+.mod-desc { 
+    font-size: 10px; color: #ccc; text-align: center; line-height: 1.3; 
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; 
+    overflow: hidden; width: 100%; flex-grow: 1; 
+}
 
-.mod-rank-controls { display: flex; width: 100%; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid #222; margin-top: auto; }
-.mod-rank-btn { background: #222; border: 1px solid #444; color: #fff; font-weight: bold; cursor: pointer; width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.mod-rank-btn:hover { border-color: var(--active-blue); color: var(--active-blue); }
-.mod-ranks-dots { display: flex; justify-content: center; gap: 3px; flex-grow: 1; }
-.mod-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; transition: 0.2s; }
-.mod-dot.active { background: var(--active-blue); box-shadow: 0 0 6px var(--active-blue); }
+/* RANK CONTROLS */
+.mod-rank-controls { 
+    display: flex; width: 100%; align-items: center; justify-content: space-between; 
+    padding-top: 8px; border-top: 1px solid #222; margin-top: auto; 
+}
+.mod-rank-btn { 
+    background: #222; border: 1px solid #444; color: #fff; font-weight: bold; 
+    cursor: pointer; width: 20px; height: 20px; border-radius: 3px; 
+    display: flex; align-items: center; justify-content: center; font-size: 14px; 
+}
+.mod-rank-btn:hover { border-color: var(--gold); color: var(--gold); }
+.mod-ranks-dots { display: flex; justify-content: center; gap: 2px; flex-grow: 1; padding: 0 5px; flex-wrap: wrap; }
+.mod-dot { width: 5px; height: 5px; border-radius: 50%; background: #333; transition: 0.2s; }
+.mod-dot.active { background: var(--gold); box-shadow: 0 0 5px var(--gold-glow); }
 
 /* BACK SIDE */
 .mod-card-back { 
     background: #121212; 
     transform: rotateY(180deg); padding: 0; text-align: left; position: relative; 
 }
-.mod-back-header { padding: 12px; border-bottom: 1px solid #333; background: rgba(0,0,0,0.6); display: flex; justify-content: space-between; align-items: center; }
-.mod-back-title { color: #fff; font-size: 14px; font-weight: bold; text-transform: uppercase; }
-.mod-source-content { flex-grow: 1; overflow-y: auto; font-size: 11px; color: #ccc; padding: 10px 12px; padding-bottom: 50px; }
-.mod-drop-row { display: flex; flex-direction: column; border-bottom: 1px solid #222; padding: 8px 0; }
-.mod-drop-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.mod-back-header { 
+    padding: 10px; border-bottom: 1px solid #333; background: rgba(0,0,0,0.6); 
+    display: flex; justify-content: space-between; align-items: center; 
+}
+.mod-back-title { color: #fff; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+.mod-trade-badge { font-size: 8px; color: #2ecc71; border: 1px solid #2ecc71; padding: 1px 4px; border-radius: 2px; }
+
+.mod-source-content { 
+    flex-grow: 1; overflow-y: auto; font-size: 10px; color: #ccc; 
+    padding: 10px; padding-bottom: 40px; scrollbar-width: thin; 
+}
+.mod-drop-row { display: flex; flex-direction: column; border-bottom: 1px solid #222; padding: 6px 0; }
+.mod-drop-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.mod-drop-loc { font-weight: bold; color: #ddd; max-width: 80%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
+.mod-drop-pct { color: #aaa; font-family: monospace; }
+.mod-drop-bar-bg { width: 100%; height: 2px; background: #222; border-radius: 2px; }
+.mod-drop-bar-fill { height: 100%; transition: width 0.3s; }
+.mod-no-drop { text-align: center; color: #555; font-style: italic; margin-top: 20px; }
+
 .mod-wiki-btn { 
     position: absolute; bottom: 0; left: 0; width: 100%; 
     background: #1a1a1a; border-top: 1px solid #444; color: #eee; 
-    padding: 10px 0; font-size: 12px; text-align: center; text-decoration: none; 
-    font-weight: 700; text-transform: uppercase; display: block;
+    padding: 10px 0; font-size: 11px; text-align: center; text-decoration: none; 
+    font-weight: 700; text-transform: uppercase; display: block; cursor: pointer;
 }
-.mod-wiki-btn:hover { color: var(--rare); background: #222; }
-
-/* UTILS */
-.mods-loading { color: var(--rare); font-size: 20px; margin-top: 50px; text-transform: uppercase; letter-spacing: 2px; }
-.hidden { display: none; }
+.mod-wiki-btn:hover { color: var(--gold); background: #222; }
