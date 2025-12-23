@@ -1,28 +1,33 @@
 "use client";
+import { Suspense } from 'react';
 import CodexListPage from '@/components/CodexListPage';
 
-// Configurazione Categorie
-const COMPANION_CATS = [
-    { 
-        id: 'all', 
-        label: 'ALL COMPANIONS', 
-        filter: () => true,
-        subFilters: [
-             { id: 'sentinel', label: 'SENTINELS', filter: i => i.category === 'Sentinels' },
-             { id: 'pet', label: 'BEASTS', filter: i => i.category === 'Pets' }, // Kubrow/Kavat
-             { id: 'robotic', label: 'HOUNDS/MOA', filter: i => i.type && (i.type.includes('Hound') || i.type.includes('MOA')) }
-        ]
+const COMPANION_CATEGORIES = [
+    {
+        id: 'all',
+        label: 'ALL',
+        filter: (item) => item.category === 'Sentinels' // O 'Pets' se il file li include
     },
-    { id: 'sentinels', label: 'SENTINELS ONLY', filter: i => i.category === 'Sentinels' },
-    { id: 'pets', label: 'BEASTS ONLY', filter: i => i.category === 'Pets' },
+    {
+        id: 'base',
+        label: 'BASE',
+        filter: (item) => item.category === 'Sentinels' && !item.name.includes('Prime')
+    },
+    {
+        id: 'prime',
+        label: 'PRIME',
+        filter: (item) => item.category === 'Sentinels' && item.name.includes('Prime')
+    }
 ];
 
 export default function Page() {
     return (
-        <CodexListPage 
-            filesToLoad={['Sentinels.json', 'Pets.json']} 
-            pageTitle="COMPANIONS" 
-            customCategories={COMPANION_CATS}
-        />
+        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Sentinels...</div>}>
+            <CodexListPage 
+                filesToLoad={['Sentinels.json']} 
+                pageTitle="COMPANIONS" 
+                customCategories={COMPANION_CATEGORIES}
+            />
+        </Suspense>
     );
 }
