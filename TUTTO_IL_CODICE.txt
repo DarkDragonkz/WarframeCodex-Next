@@ -1,4 +1,4 @@
-DATA DUMP: 2025-12-24T01:22:17.330Z
+DATA DUMP: 2025-12-24T02:12:12.249Z
 
 
 
@@ -6,37 +6,22 @@ DATA DUMP: 2025-12-24T01:22:17.330Z
 FILE: src\app\companions\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-const COMPANION_CATEGORIES = [
-    {
-        id: 'all',
-        label: 'ALL',
-        filter: (item) => item.category === 'Sentinels' // O 'Pets' se il file li include
-    },
-    {
-        id: 'base',
-        label: 'BASE',
-        filter: (item) => item.category === 'Sentinels' && !item.name.includes('Prime')
-    },
-    {
-        id: 'prime',
-        label: 'PRIME',
-        filter: (item) => item.category === 'Sentinels' && item.name.includes('Prime')
-    }
-];
+export default async function Page() {
+    const [data, lookup] = await Promise.all([
+        fetchGameData('Sentinels.json'),
+        fetchGameData('RelicLookup.json')
+    ]);
 
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Sentinels...</div>}>
-            <CodexListPage 
-                filesToLoad={['Sentinels.json']} 
-                pageTitle="COMPANIONS" 
-                customCategories={COMPANION_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            lookupData={lookup}
+            pageTitle="COMPANIONS" 
+            categoryMode="companions"
+        />
     );
 }
 
@@ -419,6 +404,10 @@ FILE: src\app\hud-layout.css
 .wiki-btn-block:hover { 
   color: #fff; border-color: #666; background: #1a1a1e; 
 }
+.card-wrapper {
+  content-visibility: auto;
+  contain-intrinsic-size: 400px; /* Altezza stimata della card */
+}
 
 ==================================================
 FILE: src\app\layout.js
@@ -452,37 +441,22 @@ export default function RootLayout({ children }) {
 FILE: src\app\melee\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-const MELEE_CATEGORIES = [
-    {
-        id: 'all',
-        label: 'ALL',
-        filter: (item) => item.category === 'Melee'
-    },
-    {
-        id: 'base',
-        label: 'BASE',
-        filter: (item) => item.category === 'Melee' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
-    },
-    {
-        id: 'prime',
-        label: 'PRIME',
-        filter: (item) => item.category === 'Melee' && item.name.includes('Prime')
-    }
-];
+export default async function Page() {
+    const [data, lookup] = await Promise.all([
+        fetchGameData('Melee.json'),
+        fetchGameData('RelicLookup.json')
+    ]);
 
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Blades...</div>}>
-            <CodexListPage 
-                filesToLoad={['Melee.json']} 
-                pageTitle="MELEE WEAPONS" 
-                customCategories={MELEE_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            lookupData={lookup}
+            pageTitle="MELEE WEAPONS" 
+            categoryMode="melee"
+        />
     );
 }
 
@@ -945,99 +919,92 @@ FILE: src\app\mods\mods.css
     font-weight: 700; text-transform: uppercase; display: block; cursor: pointer;
 }
 .mod-wiki-btn:hover { color: var(--gold); background: #222; }
+.mod-card-wrapper {
+    content-visibility: auto;
+    contain-intrinsic-size: 340px; /* Altezza stimata della Mod card */
+}
 
 ==================================================
-FILE: src\app\mods\page.js
+FILE: src\app\mods\ModsClientPage.js
 ==================================================
 
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-// IMPORTANTE: Link per il routing corretto su GitHub
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
+import { IMG_BASE_URL } from '@/utils/constants';
 import '@/app/hud-layout.css'; 
 import './mods.css';
 
 const STORAGE_KEY = 'warframe_codex_mods_v1';
 
-export default function ModsPage() {
-    const router = useRouter();
+export default function ModsClientPage({ initialData = [] }) {
     const [rawApiData, setRawApiData] = useState([]);
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
-    
+
     // Filtri
     const [currentCategory, setCurrentCategory] = useState('all');
+    
+    // Ricerca con Debounce
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
     const [currentSort, setCurrentSort] = useState('name');
     const [showMissingOnly, setShowMissingOnly] = useState(false);
-
-    // Infinite Scroll
     const [visibleCount, setVisibleCount] = useState(60);
-    
-    // --- 1. CARICAMENTO DATI ---
+
+    // Debounce Effect
     useEffect(() => {
-        let isMounted = true;
-        async function loadData() {
-            setLoading(true);
-            try {
-                const [modsRes, arcanesRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/Mods.json`),
-                    fetch(`${API_BASE_URL}/Arcanes.json`)
-                ]);
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // 1. Inizializzazione Dati (da Props)
+    useEffect(() => {
+        if(initialData && initialData.length > 0) {
+            const processed = [];
+            const ids = new Set();
+
+            initialData.forEach(item => {
+                if (!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
+                if (item.uniqueName && item.uniqueName.toLowerCase().includes("setmod")) return;
+                if (ids.has(item.name)) return; 
                 
-                if (!isMounted) return;
-                if (!modsRes.ok || !arcanesRes.ok) throw new Error("API Error");
-
-                const modsData = await modsRes.json();
-                const arcanesData = await arcanesRes.json();
-                const combined = [...modsData, ...arcanesData];
-
-                const processed = [];
-                const ids = new Set();
-
-                combined.forEach(item => {
-                    if (!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
-                    if (item.uniqueName && item.uniqueName.toLowerCase().includes("setmod")) return; 
-                    if (ids.has(item.name)) return; 
-                    
-                    ids.add(item.name);
-                    
-                    const dropLocs = item.drops ? item.drops.map(d => d.location).join(" ") : "";
-                    item.searchString = `${item.name} ${item.type} ${item.category || ""} ${dropLocs}`.toLowerCase();
-                    
-                    item.maxRank = (typeof item.fusionLimit === 'number') ? item.fusionLimit : 5;
-                    
-                    processed.push(item);
-                });
-
-                processed.sort((a, b) => a.name.localeCompare(b.name));
-                setRawApiData(processed);
+                ids.add(item.name);
                 
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) { console.error(e); }
-                }
-
-            } catch (e) { console.error("Error loading mods:", e); } 
-            finally { if (isMounted) setLoading(false); }
+                const dropLocs = item.drops ? item.drops.map(d => d.location).join(" ") : "";
+                // Pre-calcolo stringa ricerca
+                item.searchString = `${item.name} ${item.type} ${item.category || ""} ${dropLocs}`.toLowerCase();
+                item.maxRank = (typeof item.fusionLimit === 'number') ? item.fusionLimit : 5;
+                
+                processed.push(item);
+            });
+            processed.sort((a, b) => a.name.localeCompare(b.name));
+            setRawApiData(processed);
+            setLoading(false);
         }
-        loadData();
-        return () => { isMounted = false; };
-    }, []);
 
-    // 2. Salvataggio
+        // Carica salvataggi locali
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) { console.error(e); }
+        }
+    }, [initialData]);
+
+    // 2. Salvataggio automatico
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedCards]));
         }
     }, [ownedCards, loading]);
 
-    // 3. Filtri
+    // 3. Logica Filtri
     const filteredData = useMemo(() => {
         let data = rawApiData.filter(item => {
-            if (searchTerm && !item.searchString.includes(searchTerm)) return false;
+            // Usa debouncedSearch
+            if (debouncedSearch && !item.searchString.includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
             
             const t = (item.type || "").toLowerCase();
@@ -1080,9 +1047,8 @@ export default function ModsPage() {
             }
             return 0;
         });
-
         return data;
-    }, [rawApiData, currentCategory, searchTerm, currentSort, showMissingOnly, ownedCards]);
+    }, [rawApiData, currentCategory, debouncedSearch, currentSort, showMissingOnly, ownedCards]);
 
     const toggleOwned = (id) => {
         const newSet = new Set(ownedCards);
@@ -1092,12 +1058,13 @@ export default function ModsPage() {
 
     const pct = rawApiData.length > 0 ? Math.round((ownedCards.size / rawApiData.length) * 100) : 0;
 
+    if (loading) return <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>PROCESSING ORDIS DATA...</div>;
+
     return (
         <div className="codex-layout">
             <div className="header-group">
                 <div className="nav-top-row">
                     <div className="nav-brand">
-                        {/* FIX: Link gestisce il basePath automaticamente */}
                         <Link href="/" className="nav-home-btn">⌂ HOME</Link>
                         <h1 className="page-title">MODS & ARCANES</h1>
                     </div>
@@ -1170,30 +1137,26 @@ export default function ModsPage() {
                     if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
                 }}
             >
-                {loading ? (
-                    <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>INITIALIZING ORDIS DATABASE...</div>
-                ) : (
-                    <div className="card-gallery">
-                        {filteredData.slice(0, visibleCount).map(item => (
-                            <ModCard 
-                                key={item.uniqueName} 
-                                item={item} 
-                                isOwned={ownedCards.has(item.uniqueName)} 
-                                onToggle={() => toggleOwned(item.uniqueName)}
-                            />
-                        ))}
-                    </div>
-                )}
+                <div className="card-gallery">
+                    {filteredData.slice(0, visibleCount).map(item => (
+                        <ModCard 
+                            key={item.uniqueName} 
+                            item={item} 
+                            isOwned={ownedCards.has(item.uniqueName)} 
+                            onToggle={() => toggleOwned(item.uniqueName)}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
 }
 
-// --- MOD CARD COMPONENT ---
+// --- MOD CARD COMPONENT (Stesso di prima) ---
 function ModCard({ item, isOwned, onToggle }) {
     const [flipped, setFlipped] = useState(false);
     const [rank, setRank] = useState(0);
-    const maxRank = item.maxRank || 0; 
+    const maxRank = item.maxRank || 0;
 
     const getDescription = () => {
         let desc = item.description || "";
@@ -1226,9 +1189,7 @@ function ModCard({ item, isOwned, onToggle }) {
 
     const renderDrops = () => {
         if (!item.drops || item.drops.length === 0) return <div className="mod-no-drop">Source Unknown / Quest / Market</div>;
-        
         const getDropType = (d) => d.location.includes("Rot") || d.type?.includes("Mission") ? 'mission' : 'enemy';
-
         return item.drops.slice(0, 8).map((d, i) => {
             const type = getDropType(d);
             const barColor = type === 'mission' ? 'var(--mission)' : 'var(--enemy)';
@@ -1314,15 +1275,43 @@ function ModCard({ item, isOwned, onToggle }) {
 }
 
 ==================================================
+FILE: src\app\mods\page.js
+==================================================
+
+import { fetchGameData } from '@/utils/serverData';
+import ModsClientPage from './ModsClientPage';
+
+export default async function Page() {
+    // Caricamento Server-Side in parallelo
+    const [modsData, arcanesData] = await Promise.all([
+        fetchGameData('Mods.json'),
+        fetchGameData('Arcanes.json')
+    ]);
+
+    const combined = [...modsData, ...arcanesData];
+
+    return (
+        <ModsClientPage initialData={combined} />
+    );
+}
+
+==================================================
 FILE: src\app\necramechs\page.js
 ==================================================
 
-import CodexListPage from '@/components/CodexListPage';
 import { fetchGameData } from '@/utils/serverData';
+import CodexListPage from '@/components/CodexListPage';
 
 export default async function Page() {
-    const data = await fetchGameData('Warframes.json'); // I mech sono qui dentro
-    return <CodexListPage initialData={data} pageTitle="NECRAMECHS" categoryMode="necramechs" />;
+    const data = await fetchGameData('Warframes.json');
+
+    return (
+        <CodexListPage 
+            initialData={data} 
+            pageTitle="NECRAMECHS" 
+            categoryMode="necramechs"
+        />
+    );
 }
 
 ==================================================
@@ -1459,37 +1448,22 @@ export default function LandingPage() {
 FILE: src\app\primary\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-const PRIMARY_CATEGORIES = [
-    {
-        id: 'all',
-        label: 'ALL',
-        filter: (item) => item.category === 'Primary'
-    },
-    {
-        id: 'base',
-        label: 'BASE',
-        filter: (item) => item.category === 'Primary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
-    },
-    {
-        id: 'prime',
-        label: 'PRIME',
-        filter: (item) => item.category === 'Primary' && item.name.includes('Prime')
-    }
-];
+export default async function Page() {
+    const [data, lookup] = await Promise.all([
+        fetchGameData('Primary.json'),
+        fetchGameData('RelicLookup.json')
+    ]);
 
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Arsenal...</div>}>
-            <CodexListPage 
-                filesToLoad={['Primary.json']} 
-                pageTitle="PRIMARY WEAPONS" 
-                customCategories={PRIMARY_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            lookupData={lookup}
+            pageTitle="PRIMARY WEAPONS" 
+            categoryMode="primary"
+        />
     );
 }
 
@@ -1497,42 +1471,18 @@ export default function Page() {
 FILE: src\app\relics\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-// --- Definizione Categorie (Resta invariata) ---
-const createEraCategory = (id, label, eraName) => ({
-    id: id,
-    label: label,
-    filter: (item) => item.name.includes(eraName),
-    subFilters: [
-        { id: 'all', label: 'INTACT (DEFAULT)', filter: (i) => i.name.includes('Intact') },
-        { id: 'exceptional', label: 'EXCEPTIONAL', filter: (i) => i.name.includes('Exceptional') },
-        { id: 'flawless', label: 'FLAWLESS', filter: (i) => i.name.includes('Flawless') },
-        { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-        { id: 'everything', label: 'SHOW ALL', filter: () => true }
-    ]
-});
+export default async function Page() {
+    const data = await fetchGameData('Relics.json');
 
-const RELIC_CATEGORIES = [
-    createEraCategory('lith', 'LITH', 'Lith'),
-    createEraCategory('meso', 'MESO', 'Meso'),
-    createEraCategory('neo', 'NEO', 'Neo'),
-    createEraCategory('axi', 'AXI', 'Axi'),
-    createEraCategory('requiem', 'REQUIEM', 'Requiem'),
-];
-
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Void Fissures...</div>}>
-            <CodexListPage 
-                // Dice al componente di caricare "Relics.json" dalla cartella base configurata
-                filesToLoad={['Relics.json']} 
-                pageTitle="VOID RELICS" 
-                customCategories={RELIC_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            pageTitle="VOID RELICS" 
+            categoryMode="relics"
+        />
     );
 }
 
@@ -1540,37 +1490,22 @@ export default function Page() {
 FILE: src\app\secondary\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-const SECONDARY_CATEGORIES = [
-    {
-        id: 'all',
-        label: 'ALL',
-        filter: (item) => item.category === 'Secondary'
-    },
-    {
-        id: 'base',
-        label: 'BASE',
-        filter: (item) => item.category === 'Secondary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') && !item.name.includes('Prisma')
-    },
-    {
-        id: 'prime',
-        label: 'PRIME',
-        filter: (item) => item.category === 'Secondary' && item.name.includes('Prime')
-    }
-];
+export default async function Page() {
+    const [data, lookup] = await Promise.all([
+        fetchGameData('Secondary.json'),
+        fetchGameData('RelicLookup.json')
+    ]);
 
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Sidearms...</div>}>
-            <CodexListPage 
-                filesToLoad={['Secondary.json']} 
-                pageTitle="SECONDARY WEAPONS" 
-                customCategories={SECONDARY_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            lookupData={lookup}
+            pageTitle="SECONDARY WEAPONS" 
+            categoryMode="secondary"
+        />
     );
 }
 
@@ -1578,51 +1513,22 @@ export default function Page() {
 FILE: src\app\warframes\page.js
 ==================================================
 
-"use client";
-import { Suspense } from 'react';
+import { fetchGameData } from '@/utils/serverData';
 import CodexListPage from '@/components/CodexListPage';
 
-// CONFIGURAZIONE CATEGORIE (ALL, BASE, PRIME)
-const WARFRAME_CATEGORIES = [
-    {
-        id: 'all',
-        label: 'ALL',
-        // RIMUOVE I NECRAMECH
-        filter: (item) => 
-            (item.type || "").toLowerCase().includes('warframe') && 
-            item.category === 'Warframes' &&
-            !item.name.toLowerCase().includes('necramech') &&
-            !(item.type || "").toLowerCase().includes('necramech')
-    },
-    {
-        id: 'base',
-        label: 'BASE',
-        filter: (item) => 
-            (item.type || "").toLowerCase().includes('warframe') && 
-            item.category === 'Warframes' && 
-            !item.name.includes('Prime') &&
-            !item.name.toLowerCase().includes('necramech')
-    },
-    {
-        id: 'prime',
-        label: 'PRIME',
-        filter: (item) => 
-            (item.type || "").toLowerCase().includes('warframe') && 
-            item.category === 'Warframes' && 
-            item.name.includes('Prime') &&
-            !item.name.toLowerCase().includes('necramech')
-    }
-];
+export default async function Page() {
+    const [data, lookup] = await Promise.all([
+        fetchGameData('Warframes.json'),
+        fetchGameData('RelicLookup.json')
+    ]);
 
-export default function Page() {
     return (
-        <Suspense fallback={<div style={{color:'#fff', padding:'50px', textAlign:'center'}}>Loading Interface...</div>}>
-            <CodexListPage 
-                filesToLoad={['Warframes.json']} 
-                pageTitle="WARFRAMES" 
-                customCategories={WARFRAME_CATEGORIES}
-            />
-        </Suspense>
+        <CodexListPage 
+            initialData={data} 
+            lookupData={lookup}
+            pageTitle="WARFRAMES" 
+            categoryMode="warframes" // Passiamo solo la stringa!
+        />
     );
 }
 
@@ -1739,18 +1645,26 @@ FILE: src\components\CodexListPage.js
 "use client";
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-// IMPORTANTE: Link gestisce automaticamente il percorso /warframecodex-next/
-import Link from 'next/link'; 
+import Link from 'next/link';
 import CodexCard from './CodexCard';
-import WarframeDetailModal from './WarframeDetailModal';
+import dynamic from 'next/dynamic';
 import { useOwnedItems } from '@/hooks/useOwnedItems';
-import { API_BASE_URL } from '@/utils/constants';
+import { CATEGORY_CONFIGS } from '@/utils/clientCategories'; // IMPORTA LE CATEGORIE QUI
 import '@/app/hud-layout.css'; 
 
-function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, manualData = null }) {
+const WarframeDetailModal = dynamic(() => import('./WarframeDetailModal'), {
+    loading: () => <div style={{position:'fixed', inset:0, zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.8)', color:'white'}}>Loading Interface...</div>,
+    ssr: false
+});
+
+function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = null }) {
+    // categoryMode è una stringa (es: "warframes", "primary")
+    
+    // Recupera la configurazione corretta dal file client
+    const customCategories = categoryMode ? CATEGORY_CONFIGS[categoryMode] : null;
+
     const [rawApiData, setRawApiData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [errorMsg, setErrorMsg] = useState(null);
     
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -1761,8 +1675,10 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
     const defaultCat = customCategories ? customCategories[0].id : 'all';
     const subCategory = searchParams.get('sub') || defaultCat;
     const [activeSubFilter, setActiveSubFilter] = useState('all');
-    const [searchTerm, setSearchTerm] = useState("");
     
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
     const [showMissingOnly, setShowMissingOnly] = useState(false);
     const [hideVaulted, setHideVaulted] = useState(false);
     const [visibleCount, setVisibleCount] = useState(60);
@@ -1770,81 +1686,60 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
     const activeConfig = customCategories ? customCategories.find(c => c.id === subCategory) : null;
 
     useEffect(() => {
-        async function load() {
-            setLoading(true);
-            setErrorMsg(null);
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // Processamento Iniziale Dati
+    useEffect(() => {
+        if (initialData) {
+            const activeRelicsSet = new Set(lookupData ? Object.keys(lookupData) : []);
             
-            if (manualData && manualData.length > 0) {
-                 const processed = manualData
-                    .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
-                    .map(item => ({ ...item, maxRank: item.fusionLimit || item.maxLevel || 30 }));
-                const uniqueItems = Array.from(new Map(processed.map(item => [item.name, item])).values());
-                uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
-                setRawApiData(uniqueItems);
-                setLoading(false);
-                return;
-            }
+            const processed = initialData
+                .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
+                .map(item => {
+                    let computedVaulted = !!item.vaulted; 
 
-            try {
-                if (filesToLoad.length === 0) { setLoading(false); return; }
-
-                // Carica i dati JSON dal tuo repo
-                const [dataResults, lookupRes] = await Promise.all([
-                    Promise.all(filesToLoad.map(f => fetch(`${API_BASE_URL}/${f}`).then(r => r.json()))),
-                    fetch(`${API_BASE_URL}/RelicLookup.json`).then(r => r.ok ? r.json() : null)
-                ]);
-
-                const activeRelicsSet = new Set(lookupRes ? Object.keys(lookupRes) : []);
-                const merged = dataResults.flat();
-                
-                const processed = merged
-                    .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
-                    .map(item => {
-                        let computedVaulted = !!item.vaulted; 
-
-                        if (item.name.includes('Prime') && lookupRes) {
-                            const relicNames = [];
-                            if (item.components) {
-                                item.components.forEach(c => {
-                                    if(c.drops) c.drops.forEach(d => {
-                                        const match = d.location.toUpperCase().match(/(LITH|MESO|NEO|AXI|REQUIEM)\s+([A-Z0-9]+)/);
-                                        if (match) relicNames.push(`${match[1]} ${match[2]}`);
-                                    });
+                    if (item.name.includes('Prime') && lookupData) {
+                        const relicNames = [];
+                        if (item.components) {
+                            item.components.forEach(c => {
+                                if(c.drops) c.drops.forEach(d => {
+                                    const match = d.location.toUpperCase().match(/(LITH|MESO|NEO|AXI|REQUIEM)\s+([A-Z0-9]+)/);
+                                    if (match) relicNames.push(`${match[1]} ${match[2]}`);
                                 });
-                            }
-                            
-                            if (relicNames.length > 0) {
-                                const hasActiveRelic = relicNames.some(r => activeRelicsSet.has(r));
-                                if (!hasActiveRelic) computedVaulted = true; 
-                                else computedVaulted = false; 
-                            }
+                            });
                         }
+                        
+                        if (relicNames.length > 0) {
+                            const hasActiveRelic = relicNames.some(r => activeRelicsSet.has(r));
+                            if (!hasActiveRelic) computedVaulted = true; 
+                            else computedVaulted = false; 
+                        }
+                    }
 
-                        return {
-                            ...item,
-                            vaulted: computedVaulted, 
-                            maxRank: item.fusionLimit || item.maxLevel || 30,
-                            baseDrain: item.baseDrain || 0,
-                            polarityIcon: item.polarity ? `https://warframe.fandom.com/wiki/File:Polarity_${item.polarity.charAt(0).toUpperCase() + item.polarity.slice(1)}.png` : null 
-                        };
-                    });
+                    return {
+                        ...item,
+                        vaulted: computedVaulted, 
+                        maxRank: item.fusionLimit || item.maxLevel || 30,
+                        baseDrain: item.baseDrain || 0,
+                        polarityIcon: item.polarity ? `https://warframe.fandom.com/wiki/File:Polarity_${item.polarity.charAt(0).toUpperCase() + item.polarity.slice(1)}.png` : null 
+                    };
+                });
 
-                const uniqueItems = Array.from(new Map(processed.map(item => [item.name, item])).values());
-                uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
-                
-                setRawApiData(uniqueItems);
-            } catch (e) { 
-                console.error("Load error:", e);
-                setErrorMsg(e.message);
-            }
-            finally { setLoading(false); }
+            const uniqueItems = Array.from(new Map(processed.map(item => [item.name, item])).values());
+            uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
+            
+            setRawApiData(uniqueItems);
+            setLoading(false);
         }
-        load();
-    }, [filesToLoad.join(','), manualData]);
+    }, [initialData, lookupData]);
 
     const processedData = useMemo(() => {
         return rawApiData.filter(item => {
-            if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) return false;
+            if (debouncedSearch && !item.name.toLowerCase().includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
             if (hideVaulted && item.vaulted) return false;
             
@@ -1855,7 +1750,7 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             }
             return true;
         });
-    }, [rawApiData, subCategory, activeSubFilter, searchTerm, showMissingOnly, hideVaulted, ownedCards, activeConfig]);
+    }, [rawApiData, subCategory, activeSubFilter, debouncedSearch, showMissingOnly, hideVaulted, ownedCards, activeConfig]);
 
     const handleCategoryChange = (id) => {
         const p = new URLSearchParams(searchParams.toString());
@@ -1865,7 +1760,6 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
     };
 
     if (loading) return <div style={{padding:'50px', color:'#fff', textAlign:'center'}}>INITIALIZING ORDIS DATABASE...</div>;
-    if (errorMsg) return <div style={{padding:'50px', color:'red', textAlign:'center'}}>{errorMsg}</div>;
 
     const pct = rawApiData.length > 0 ? Math.round((ownedCards.size / rawApiData.length) * 100) : 0;
 
@@ -1874,7 +1768,6 @@ function CodexContent({ filesToLoad = [], pageTitle, customCategories = null, ma
             <div className="header-group">
                 <div className="nav-top-row">
                     <div className="nav-brand">
-                        {/* FIX: Usando Link invece di <a> il percorso GitHub viene rispettato */}
                         <Link href="/" className="nav-home-btn">⌂ HOME</Link>
                         <h1 className="page-title">{pageTitle}</h1>
                     </div>
@@ -2634,14 +2527,18 @@ export function useOwnedItems() {
         setIsLoaded(true);
     }, []);
 
-    // Salva dati ad ogni modifica
+    // OTTIMIZZAZIONE PUNTO 4: Debounce del salvataggio
     useEffect(() => {
-        if (isLoaded) {
+        if (!isLoaded) return;
+
+        // Aspetta 1 secondo di inattività prima di scrivere su disco
+        const handler = setTimeout(() => {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedCards]));
-        }
+        }, 1000);
+
+        return () => clearTimeout(handler);
     }, [ownedCards, isLoaded]);
 
-    // Funzione ottimizzata per toggle
     const toggleOwned = useCallback((id) => {
         setOwnedCards(prev => {
             const newSet = new Set(prev);
@@ -2651,7 +2548,6 @@ export function useOwnedItems() {
         });
     }, []);
 
-    // Funzione per import massivo (es. da file JSON)
     const importItems = useCallback((itemsArray, rawData) => {
         setOwnedCards(prev => {
             const newSet = new Set(prev);
@@ -2731,6 +2627,103 @@ export const CATEGORY_CONFIGS = {
             id: 'arcanes', label: 'ARCANES',
             filter: (item) => isArcane(item)
         }
+    ]
+};
+
+==================================================
+FILE: src\utils\clientCategories.js
+==================================================
+
+// Questo file contiene le funzioni di filtro.
+// Viene importato SOLO dai Client Components.
+
+export const CATEGORY_CONFIGS = {
+    'warframes': [
+        {
+            id: 'all', label: 'ALL',
+            filter: (item) => (item.type || "").toLowerCase().includes('warframe') && 
+                              item.category === 'Warframes' &&
+                              !item.name.toLowerCase().includes('necramech')
+        },
+        {
+            id: 'base', label: 'BASE',
+            filter: (item) => (item.type || "").toLowerCase().includes('warframe') && 
+                              item.category === 'Warframes' && 
+                              !item.name.includes('Prime') &&
+                              !item.name.toLowerCase().includes('necramech')
+        },
+        {
+            id: 'prime', label: 'PRIME',
+            filter: (item) => (item.type || "").toLowerCase().includes('warframe') && 
+                              item.category === 'Warframes' && 
+                              item.name.includes('Prime') &&
+                              !item.name.toLowerCase().includes('necramech')
+        }
+    ],
+    'primary': [
+        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Primary' },
+        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Primary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
+        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Primary' && item.name.includes('Prime') }
+    ],
+    'secondary': [
+        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Secondary' },
+        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Secondary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
+        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Secondary' && item.name.includes('Prime') }
+    ],
+    'melee': [
+        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Melee' },
+        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Melee' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
+        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Melee' && item.name.includes('Prime') }
+    ],
+    'companions': [
+        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Sentinels' },
+        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Sentinels' && !item.name.includes('Prime') },
+        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Sentinels' && item.name.includes('Prime') }
+    ],
+    'relics': [
+        {
+            id: 'lith', label: 'LITH', filter: (i) => i.name.includes('Lith'),
+            subFilters: [
+                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
+                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
+                { id: 'everything', label: 'ALL', filter: () => true }
+            ]
+        },
+        {
+            id: 'meso', label: 'MESO', filter: (i) => i.name.includes('Meso'),
+            subFilters: [
+                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
+                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
+                { id: 'everything', label: 'ALL', filter: () => true }
+            ]
+        },
+        {
+            id: 'neo', label: 'NEO', filter: (i) => i.name.includes('Neo'),
+            subFilters: [
+                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
+                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
+                { id: 'everything', label: 'ALL', filter: () => true }
+            ]
+        },
+        {
+            id: 'axi', label: 'AXI', filter: (i) => i.name.includes('Axi'),
+            subFilters: [
+                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
+                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
+                { id: 'everything', label: 'ALL', filter: () => true }
+            ]
+        },
+        {
+            id: 'requiem', label: 'REQUIEM', filter: (i) => i.name.includes('Requiem'),
+            subFilters: [
+                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
+                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
+                { id: 'everything', label: 'ALL', filter: () => true }
+            ]
+        }
+    ],
+    'necramechs': [
+         { id: 'all', label: 'NECRAMECHS', filter: (item) => (item.type || "").toLowerCase().includes('necramech') }
     ]
 };
 
@@ -2825,65 +2818,47 @@ export async function getRelicDatabase() {
 FILE: src\utils\serverData.js
 ==================================================
 
-// src/utils/serverData.js
 import fs from 'fs/promises';
 import path from 'path';
 import { API_BASE_URL } from './constants';
 
-const DB_FOLDER = path.join(process.cwd(), 'database_api');
+// Determina la cartella del database in modo sicuro
+// process.cwd() è la root del progetto durante la build
+const DB_FOLDER = path.join(process.cwd(), 'public', 'database_api'); 
+// NOTA: Ho aggiunto 'public'. Se la tua cartella 'database_api' è nella root (fuori da public), togli 'public'.
+// Ma per Next.js, i file statici accessibili via fetch dovrebbero stare in /public/database_api.
+// SE LA CARTELLA è nella root del progetto (allo stesso livello di src), usa:
+// const DB_FOLDER = path.join(process.cwd(), 'database_api');
 
-// CACHE GLOBALE IN MEMORIA (Singleton pattern)
+// Cache globale per evitare riletture durante la build
 global.dataCache = global.dataCache || {};
 
-export async function fetchGameData(filename, forceRefresh = false) {
-    const filePath = path.join(DB_FOLDER, filename);
-
-    // 1. CONTROLLO CACHE RAM (Velocità Massima)
-    if (!forceRefresh && global.dataCache[filename]) {
+export async function fetchGameData(filename) {
+    // 1. Controlla Cache RAM
+    if (global.dataCache[filename]) {
         return global.dataCache[filename];
     }
 
-    // 2. CONTROLLO LOCALE SU DISCO
-    if (!forceRefresh) {
+    // 2. Tenta lettura da File System (Obbligatorio per la Build)
+    // Cerchiamo sia in root/database_api che in root/public/database_api per sicurezza
+    const possiblePaths = [
+        path.join(process.cwd(), 'database_api', filename),
+        path.join(process.cwd(), 'public', 'database_api', filename)
+    ];
+
+    for (const filePath of possiblePaths) {
         try {
             const fileContent = await fs.readFile(filePath, 'utf-8');
             const json = JSON.parse(fileContent);
-            if (Array.isArray(json) && json.length > 0) {
-                // Salva in RAM per la prossima volta
-                global.dataCache[filename] = json;
-                return json;
-            }
-        } catch (error) {
-            // File mancante o corrotto, procedi al download
+            global.dataCache[filename] = json;
+            return json;
+        } catch (e) {
+            // Continua al prossimo path
         }
     }
 
-    // 3. DOWNLOAD DA GITHUB
-    try {
-        console.log(`[SERVER] Downloading ${filename}...`);
-        const url = `${API_BASE_URL}/${filename}`;
-        const res = await fetch(url, { cache: 'no-store' }); // No fetch cache
-        if (!res.ok) throw new Error(`HTTP Error ${res.status}: ${url}`);
-        
-        const data = await res.json();
-
-        // 4. SALVATAGGIO DISCO + RAM
-        try {
-            await fs.mkdir(DB_FOLDER, { recursive: true });
-            await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-            global.dataCache[filename] = data; // Aggiorna RAM
-            console.log(`[SERVER] Saved: ${filePath}`);
-        } catch (writeErr) {
-            console.error(`[SERVER] Disk write error:`, writeErr);
-        }
-
-        return data;
-    } catch (error) {
-        console.error(`[SERVER ERROR] Failed to load ${filename}:`, error);
-        return [];
-    }
-}
-
-export async function fetchRelicsDB() {
-    return await fetchGameData('Relics.json');
+    // 3. Se fallisce FS, evita fetch durante la build statica
+    // Restituisci array vuoto per non rompere la build
+    console.warn(`[SERVER WARNING] Could not load ${filename} from FS. Returning empty array.`);
+    return [];
 }
