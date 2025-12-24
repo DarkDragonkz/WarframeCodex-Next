@@ -1,6 +1,5 @@
 "use client";
 import { useState, memo } from 'react';
-import Image from 'next/image'; // OTTIMIZZAZIONE PUNTO 5
 import { IMG_BASE_URL } from '@/utils/constants';
 
 const getStatAtRank = (rank, maxRank, descriptionTemplate, levelStats) => {
@@ -23,6 +22,8 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
     const isMod = item.category === 'Mods';
     const isArcane = item.category === 'Arcanes';
     const isPrime = item.name.includes("Prime");
+    
+    // --- LOGICA PURA: SI BASA SOLO SUL DATO SCRITTO ---
     const isVaulted = !!item.vaulted;
 
     const updateRank = (e, change) => {
@@ -37,6 +38,7 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
     if (isMod || isArcane) {
         displayDesc = getStatAtRank(rank, item.maxRank, item.rawDescription || item.description, item.levelStats);
     }
+    
     displayDesc = displayDesc.replace(/<br>/g, " <br/> ");
 
     return (
@@ -47,6 +49,7 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
                     {isOwned ? '✔' : ''}
                 </div>
 
+                {/* Mostra ETICHETTA solo se il dato dice che è Vaulted */}
                 {isVaulted && <div className="vaulted-tag-card">VAULTED</div>}
 
                 {(item.baseDrain || item.polarityIcon) && (isMod || isArcane) && (
@@ -57,18 +60,12 @@ const CodexCard = memo(function CodexCard({ item, isOwned, onToggleOwned }) {
                 )}
 
                 {item.imageName ? (
-                    /* OTTIMIZZAZIONE PUNTO 5: Next Image */
-                    <Image 
+                    <img 
                         src={`${IMG_BASE_URL}/${item.imageName}`} 
+                        className="card-image-img" 
+                        loading="lazy" 
                         alt={item.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="card-image-img"
-                        style={{ 
-                            objectFit: 'contain',
-                            transform: isArcane ? 'scale(0.7)' : 'none'
-                        }}
-                        unoptimized // Essenziale per GitHub Pages
+                        style={isArcane ? { transform: 'scale(0.7)' } : {}} 
                     />
                 ) : <div style={{fontSize:'10px', color:'#666'}}>{item.name}</div>}
             </div>

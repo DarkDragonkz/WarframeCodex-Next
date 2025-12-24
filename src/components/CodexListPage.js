@@ -5,9 +5,7 @@ import Link from 'next/link';
 import CodexCard from './CodexCard';
 import dynamic from 'next/dynamic';
 import { useOwnedItems } from '@/hooks/useOwnedItems';
-import { CATEGORY_CONFIGS } from '@/utils/clientCategories';
-// OTTIMIZZAZIONE PUNTO 1: React Virtuoso
-import { VirtuosoGrid } from 'react-virtuoso';
+import { CATEGORY_CONFIGS } from '@/utils/clientCategories'; // IMPORTA LE CATEGORIE QUI
 import '@/app/hud-layout.css'; 
 
 const WarframeDetailModal = dynamic(() => import('./WarframeDetailModal'), {
@@ -16,6 +14,9 @@ const WarframeDetailModal = dynamic(() => import('./WarframeDetailModal'), {
 });
 
 function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = null }) {
+    // categoryMode è una stringa (es: "warframes", "primary")
+    
+    // Recupera la configurazione corretta dal file client
     const customCategories = categoryMode ? CATEGORY_CONFIGS[categoryMode] : null;
 
     const [rawApiData, setRawApiData] = useState([]);
@@ -36,7 +37,7 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
 
     const [showMissingOnly, setShowMissingOnly] = useState(false);
     const [hideVaulted, setHideVaulted] = useState(false);
-    // Nota: visibleCount non serve più con Virtuoso!
+    const [visibleCount, setVisibleCount] = useState(60);
 
     const activeConfig = customCategories ? customCategories.find(c => c.id === subCategory) : null;
 
@@ -47,6 +48,7 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    // Processamento Iniziale Dati
     useEffect(() => {
         if (initialData) {
             const activeRelicsSet = new Set(lookupData ? Object.keys(lookupData) : []);
@@ -55,6 +57,7 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
                 .filter(i => i && !i.uniqueName.includes("RANDOM") && i.imageName) 
                 .map(item => {
                     let computedVaulted = !!item.vaulted; 
+
                     if (item.name.includes('Prime') && lookupData) {
                         const relicNames = [];
                         if (item.components) {
@@ -65,12 +68,14 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
                                 });
                             });
                         }
+                        
                         if (relicNames.length > 0) {
                             const hasActiveRelic = relicNames.some(r => activeRelicsSet.has(r));
                             if (!hasActiveRelic) computedVaulted = true; 
                             else computedVaulted = false; 
                         }
                     }
+
                     return {
                         ...item,
                         vaulted: computedVaulted, 
@@ -175,27 +180,17 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
                 <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
             </div>
 
-            {/* OTTIMIZZAZIONE PUNTO 1: VirtuosoGrid invece di scroll e map manuale */}
-            <div className="gallery-scroll-area">
-                <VirtuosoGrid
-                    style={{ height: '100%', width: '100%' }}
-                    totalCount={processedData.length}
-                    overscan={200} // Pre-renderizza pixel extra per scroll fluido
-                    components={{
-                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px', paddingBottom: '100px'}} />,
-                        Item: (props) => <div {...props} style={{...props.style, display:'contents'}} /> // display: contents permette al figlio di partecipare al grid del genitore
-                    }}
-                    itemContent={(index) => {
-                        const item = processedData[index];
-                        return (
-                            <div onClick={() => setSelectedItem(item)} style={{cursor:'pointer', height:'100%'}}>
-                                <CodexCard item={item} isOwned={ownedCards.has(item.uniqueName)} onToggleOwned={toggleOwned} />
-                            </div>
-                        );
-                    }}
-                />
+             <div className="gallery-scroll-area" onScroll={(e) => {
+                if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
+            }}>
+                <div className="card-gallery">
+                    {processedData.slice(0, visibleCount).map(item => (
+                        <div key={item.uniqueName} onClick={() => setSelectedItem(item)} style={{cursor:'pointer'}}>
+                            <CodexCard item={item} isOwned={ownedCards.has(item.uniqueName)} onToggleOwned={toggleOwned} />
+                        </div>
+                    ))}
+                </div>
             </div>
-            
             {selectedItem && (
                 <WarframeDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} ownedItems={ownedCards} onToggle={toggleOwned} />
             )}
