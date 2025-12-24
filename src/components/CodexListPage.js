@@ -5,7 +5,8 @@ import Link from 'next/link';
 import CodexCard from './CodexCard';
 import dynamic from 'next/dynamic';
 import { useOwnedItems } from '@/hooks/useOwnedItems';
-import { CATEGORY_CONFIGS } from '@/utils/clientCategories'; // IMPORTA LE CATEGORIE QUI
+import { CATEGORY_CONFIGS } from '@/utils/clientCategories';
+import { VirtuosoGrid } from 'react-virtuoso';
 import '@/app/hud-layout.css'; 
 
 const WarframeDetailModal = dynamic(() => import('./WarframeDetailModal'), {
@@ -14,9 +15,6 @@ const WarframeDetailModal = dynamic(() => import('./WarframeDetailModal'), {
 });
 
 function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = null }) {
-    // categoryMode è una stringa (es: "warframes", "primary")
-    
-    // Recupera la configurazione corretta dal file client
     const customCategories = categoryMode ? CATEGORY_CONFIGS[categoryMode] : null;
 
     const [rawApiData, setRawApiData] = useState([]);
@@ -36,8 +34,9 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
     const [showMissingOnly, setShowMissingOnly] = useState(false);
-    const [hideVaulted, setHideVaulted] = useState(false);
-    const [visibleCount, setVisibleCount] = useState(60);
+    
+    // NUOVA LOGICA: showVaulted (False di default = Vaulted Nascosti)
+    const [showVaulted, setShowVaulted] = useState(false);
 
     const activeConfig = customCategories ? customCategories.find(c => c.id === subCategory) : null;
 
@@ -48,7 +47,6 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // Processamento Iniziale Dati
     useEffect(() => {
         if (initialData) {
             const activeRelicsSet = new Set(lookupData ? Object.keys(lookupData) : []);
@@ -97,7 +95,9 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
         return rawApiData.filter(item => {
             if (debouncedSearch && !item.name.toLowerCase().includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
-            if (hideVaulted && item.vaulted) return false;
+            
+            // LOGICA INVERTITA: Se NON voglio vedere i vaulted (default) E l'item è vaulted -> Nascondi
+            if (!showVaulted && item.vaulted) return false;
             
             if (activeConfig && activeConfig.filter && !activeConfig.filter(item)) return false;
             if (activeConfig && activeConfig.subFilters) {
@@ -106,7 +106,7 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
             }
             return true;
         });
-    }, [rawApiData, subCategory, activeSubFilter, debouncedSearch, showMissingOnly, hideVaulted, ownedCards, activeConfig]);
+    }, [rawApiData, subCategory, activeSubFilter, debouncedSearch, showMissingOnly, showVaulted, ownedCards, activeConfig]);
 
     const handleCategoryChange = (id) => {
         const p = new URLSearchParams(searchParams.toString());
@@ -165,11 +165,14 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
                          <div className="search-wrapper">
                             <input type="text" className="search-input" placeholder="SEARCH..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} />
                         </div>
+                        
+                        {/* CHECKBOX SHOW VAULTED */}
                         <label className="toggle-filter">
-                            <input type="checkbox" style={{display:'none'}} checked={hideVaulted} onChange={(e) => setHideVaulted(e.target.checked)} />
-                            <div className="checkbox-custom">{hideVaulted && '✓'}</div>
-                            HIDE VAULTED
+                            <input type="checkbox" style={{display:'none'}} checked={showVaulted} onChange={(e) => setShowVaulted(e.target.checked)} />
+                            <div className="checkbox-custom">{showVaulted && '✓'}</div>
+                            SHOW VAULTED
                         </label>
+
                         <label className="toggle-filter">
                             <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
                             <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
@@ -180,17 +183,26 @@ function CodexContent({ pageTitle, categoryMode, initialData = [], lookupData = 
                 <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
             </div>
 
-             <div className="gallery-scroll-area" onScroll={(e) => {
-                if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
-            }}>
-                <div className="card-gallery">
-                    {processedData.slice(0, visibleCount).map(item => (
-                        <div key={item.uniqueName} onClick={() => setSelectedItem(item)} style={{cursor:'pointer'}}>
-                            <CodexCard item={item} isOwned={ownedCards.has(item.uniqueName)} onToggleOwned={toggleOwned} />
-                        </div>
-                    ))}
-                </div>
+            <div className="gallery-scroll-area">
+                <VirtuosoGrid
+                    style={{ height: '100%', width: '100%' }}
+                    totalCount={processedData.length}
+                    overscan={200}
+                    components={{
+                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'flex', flexWrap: 'wrap', justifyContent:'center', gap:'25px', paddingBottom: '100px'}} />,
+                        Item: (props) => <div {...props} style={{...props.style, margin: 0}} />
+                    }}
+                    itemContent={(index) => {
+                        const item = processedData[index];
+                        return (
+                            <div onClick={() => setSelectedItem(item)} style={{cursor:'pointer'}}>
+                                <CodexCard item={item} isOwned={ownedCards.has(item.uniqueName)} onToggleOwned={toggleOwned} />
+                            </div>
+                        );
+                    }}
+                />
             </div>
+            
             {selectedItem && (
                 <WarframeDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} ownedItems={ownedCards} onToggle={toggleOwned} />
             )}

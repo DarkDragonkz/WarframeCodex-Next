@@ -6,7 +6,6 @@ import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
 import RelicDetailModal from '@/components/RelicDetailModal'; 
 import '@/app/hud-layout.css'; 
-import './relics.css'; // IMPORTANTE
 
 const STORAGE_KEY = 'warframe_codex_relics_v1';
 
@@ -15,36 +14,44 @@ export default function RelicsClientPage({ initialData = [] }) {
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
 
+    // Filtri
     const [currentEra, setCurrentEra] = useState('all'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showMissingOnly, setShowMissingOnly] = useState(false);
-    const [hideVaulted, setHideVaulted] = useState(false);
+    
+    // NUOVA LOGICA: showVaulted (False di default = Vaulted Nascosti)
+    const [showVaulted, setShowVaulted] = useState(false);
+    
     const [selectedItem, setSelectedItem] = useState(null);
 
+    // Debounce
     useEffect(() => {
         const timer = setTimeout(() => { setDebouncedSearch(searchTerm); }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    // Inizializzazione
     useEffect(() => {
         if(initialData && initialData.length > 0) {
+            // Filtriamo solo le reliquie "Intact"
             const processed = initialData.filter(item => 
                 item.name.includes('Intact') && 
                 item.category === 'Relics'
             ).map(item => ({
                 ...item,
+                // Calcoliamo isVaulted
                 isVaulted: !item.drops || item.drops.length === 0,
-                // Estrae "G1" da "Lith G1 Relic (Intact)"
-                code: item.name.split(' ')[1],
-                // Estrae "Lith"
-                era: item.name.split(' ')[0],
-                simpleName: item.name.replace(' Relic (Intact)', '').trim()
+                // Nome pulito per visualizzazione e ricerca
+                simpleName: item.name.replace(' Intact', '').replace(' Relic', '').trim()
             }));
 
+            // Ordina per Era e poi per Nome
             const eraOrder = { 'Lith': 1, 'Meso': 2, 'Neo': 3, 'Axi': 4, 'Requiem': 5 };
             processed.sort((a, b) => {
-                if (eraOrder[a.era] !== eraOrder[b.era]) return (eraOrder[a.era] || 9) - (eraOrder[b.era] || 9);
+                const eraA = a.name.split(' ')[0];
+                const eraB = b.name.split(' ')[0];
+                if (eraOrder[eraA] !== eraOrder[eraB]) return (eraOrder[eraA] || 9) - (eraOrder[eraB] || 9);
                 return a.name.localeCompare(b.name);
             });
 
@@ -58,6 +65,7 @@ export default function RelicsClientPage({ initialData = [] }) {
         }
     }, [initialData]);
 
+    // Salvataggio
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             const handler = setTimeout(() => {
@@ -71,11 +79,16 @@ export default function RelicsClientPage({ initialData = [] }) {
         return rawApiData.filter(item => {
             if (debouncedSearch && !item.simpleName.toLowerCase().includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
-            if (hideVaulted && item.isVaulted) return false;
-            if (currentEra !== 'all' && item.era !== currentEra) return false;
+            
+            // NUOVA LOGICA INVERTITA
+            if (!showVaulted && item.isVaulted) return false;
+
+            if (currentEra !== 'all') {
+                if (!item.name.startsWith(currentEra)) return false;
+            }
             return true;
         });
-    }, [rawApiData, currentEra, debouncedSearch, showMissingOnly, hideVaulted, ownedCards]);
+    }, [rawApiData, currentEra, debouncedSearch, showMissingOnly, showVaulted, ownedCards]);
 
     const toggleOwned = (id) => {
         const newSet = new Set(ownedCards);
@@ -125,15 +138,18 @@ export default function RelicsClientPage({ initialData = [] }) {
                     <div className="filters-right">
                         <div className="search-wrapper">
                             <input 
-                                type="text" className="search-input" placeholder="SEARCH (Ex: G1)..." 
+                                type="text" className="search-input" placeholder="SEARCH RELIC..." 
                                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} 
                             />
                         </div>
+                        
+                        {/* CHECKBOX SHOW VAULTED */}
                         <label className="toggle-filter">
-                            <input type="checkbox" style={{display:'none'}} checked={hideVaulted} onChange={(e) => setHideVaulted(e.target.checked)} />
-                            <div className="checkbox-custom">{hideVaulted && '✓'}</div>
-                            HIDE VAULTED
+                            <input type="checkbox" style={{display:'none'}} checked={showVaulted} onChange={(e) => setShowVaulted(e.target.checked)} />
+                            <div className="checkbox-custom">{showVaulted && '✓'}</div>
+                            SHOW VAULTED
                         </label>
+
                         <label className="toggle-filter">
                             <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
                             <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
@@ -150,13 +166,13 @@ export default function RelicsClientPage({ initialData = [] }) {
                     totalCount={filteredData.length}
                     overscan={200}
                     components={{
-                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px', paddingBottom:'100px'}} />,
+                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'flex', flexWrap: 'wrap', justifyContent:'center', gap:'20px', paddingBottom:'100px'}} />,
                         Item: (props) => <div {...props} style={{...props.style, margin: 0}} />
                     }}
                     itemContent={(index) => {
                         const item = filteredData[index];
                         return (
-                            <div onClick={() => setSelectedItem(item)} style={{height: '100%'}}>
+                            <div onClick={() => setSelectedItem(item)} style={{cursor:'pointer'}}>
                                 <RelicCard 
                                     item={item} 
                                     isOwned={ownedCards.has(item.uniqueName)} 
@@ -180,34 +196,42 @@ export default function RelicsClientPage({ initialData = [] }) {
     );
 }
 
-// Nuova Card con Design Aggiornato
+// Card Semplice e Funzionale
 function RelicCard({ item, isOwned, onToggle }) {
-    return (
-        <div 
-            className={`relic-card-advanced ${item.isVaulted ? 'is-vaulted' : ''} ${isOwned ? 'owned' : ''}`}
-            data-era={item.era}
-        >
-            <div className="relic-era-bar"></div>
-            
-            <div className="relic-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
-                {isOwned ? '✓' : ''}
-            </div>
+    const eraColor = {
+        'Lith': '#a89686', // Bronze
+        'Meso': '#c0c0c0', // Silver
+        'Neo': '#d4af37', // Gold
+        'Axi': '#b0c9ec', // Platinum
+        'Requiem': '#ff4444' // Red
+    };
+    const era = item.name.split(' ')[0];
+    const borderColor = eraColor[era] || '#444';
 
-            <div className="relic-img-wrapper">
+    return (
+        <div className={`card-wrapper ${isOwned ? 'owned' : ''}`} style={{height:'280px', width:'180px', borderTop:`3px solid ${borderColor}`}}>
+            <div className="card-image-container" style={{height:'140px', background: 'radial-gradient(circle, #222 0%, #111 100%)'}}>
+                <div className="owned-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+                    {isOwned ? '✔' : ''}
+                </div>
+                
+                {item.isVaulted && <div className="vaulted-tag-card">VAULTED</div>}
+
                 <Image 
                     src={`${IMG_BASE_URL}/${item.imageName}`} 
                     alt={item.name} 
                     fill
-                    className="relic-img"
+                    className="card-image-img"
+                    style={{objectFit: 'contain', transform:'scale(0.8)'}}
                     unoptimized
                 />
             </div>
 
-            <div className="relic-info">
-                <div className="relic-era-label">{item.era}</div>
-                <div className="relic-code">{item.code}</div>
-                <div className="relic-status-badge">
-                    {item.isVaulted ? "VAULTED" : "AVAILABLE"}
+            <div className="info-area" style={{justifyContent:'flex-start', padding:'15px 10px'}}>
+                <div className="type-pill" style={{color: borderColor, borderColor: borderColor}}>{era} ERA</div>
+                <div className="mod-name" style={{fontSize:'16px'}}>{item.simpleName.split(' ')[1]}</div>
+                <div style={{fontSize:'10px', color:'#666', marginTop:'5px'}}>
+                    {item.isVaulted ? "Archived Relic" : "Available in Mission"}
                 </div>
             </div>
         </div>
