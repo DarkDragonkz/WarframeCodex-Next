@@ -242,12 +242,25 @@ function ModCard({ item, isOwned, onToggle }) {
 
     const wikiUrl = `https://warframe.fandom.com/wiki/${item.name.replace(/ /g, '_')}`;
     
+    // --- MAPPA POLARITÀ MIGLIORATA ---
     const getPolarityIcon = () => {
         if (!item.polarity) return null;
-        let p = item.polarity.toLowerCase().trim();
-        if(p === 'universal') p = 'any';
-        const capitalized = p.charAt(0).toUpperCase() + p.slice(1);
-        return `/Polarity/${capitalized}.svg`;
+        const p = item.polarity.toLowerCase().trim();
+        
+        // Mappa i nomi che arrivano dall'API ai nomi dei file che hai tu
+        const map = {
+            'madurai': 'Madurai.svg',
+            'naramon': 'Naramon.svg',
+            'vazarin': 'Vazarin.svg',
+            'zenurik': 'Zenurik.svg',
+            'unairu': 'Unairu.svg',
+            'penjaga': 'Penjaga.svg', // Assicurati di avere questo file! Altrimenti usa 'Precept.svg' se lo hai rinominato
+            'universal': 'Any.svg',   // Questo è quello per "universal"
+            'umbra': 'Umbra.svg'
+        };
+
+        const fileName = map[p] || (p.charAt(0).toUpperCase() + p.slice(1) + '.svg'); // Fallback: Capitalize
+        return `/Polarity/${fileName}`;
     };
 
     const polIconUrl = getPolarityIcon();
@@ -260,7 +273,6 @@ function ModCard({ item, isOwned, onToggle }) {
         if (!item.drops || item.drops.length === 0) return <div style={{padding:'20px', fontStyle:'italic', color:'#555', textAlign:'center', fontSize:'11px'}}>Source Unknown / Quest</div>;
         
         return item.drops.slice(0, 10).map((d, i) => {
-            // Logica Legenda Colori
             let typeClass = 'enemy';
             if(d.location.includes("Rot") || d.type?.includes("Mission") || d.type?.includes("Bounty")) typeClass = 'mission';
             else if(d.location.includes("Syndicate") || d.type?.includes("Offering")) typeClass = 'other';
@@ -275,7 +287,6 @@ function ModCard({ item, isOwned, onToggle }) {
                         <span className="drop-chance">{(d.chance * 100).toFixed(2)}%</span>
                     </div>
                     <div className="drop-meta">
-                        {/* FIX: Mostra Rarity e Rotation, ma non il tipo se è ridondante */}
                         <span>{d.rotation ? `Rot ${d.rotation}` : ''}</span>
                         <span style={{color: getRarityColor(d.rarity)}}>{d.rarity}</span>
                     </div>
@@ -298,12 +309,13 @@ function ModCard({ item, isOwned, onToggle }) {
                         <Image src={`${IMG_BASE_URL}/${item.imageName}`} alt={item.name} fill className="mod-img" unoptimized />
                     </div>
                     <div className="mod-top-bar">
-                        <div className="mod-status-btn" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
-                            {isOwned ? '✔' : '+'}
+                        {/* BADGE "OWNED / MISSING" */}
+                        <div className={`mod-status-btn ${isOwned ? 'owned' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+                            {isOwned ? 'OWNED' : 'MISSING'}
                         </div>
                         <div className="mod-drain-box">
                             <span>{currentDrain}</span>
-                            {polIconUrl && <img src={polIconUrl} alt={item.polarity} className="mod-polarity-icon" />}
+                            {polIconUrl && <img src={polIconUrl} alt={item.polarity} className="mod-polarity-icon" onError={(e) => e.target.style.display='none'} />}
                         </div>
                     </div>
                     <div className="mod-info-front">
@@ -334,7 +346,6 @@ function ModCard({ item, isOwned, onToggle }) {
                             <span className="back-title">DROP SOURCES</span>
                             <span className="flip-icon" onClick={(e) => { e.stopPropagation(); setFlipped(false); }}>↺</span>
                         </div>
-                        {/* NUOVA LEGENDA */}
                         <div className="mod-drop-legend">
                             <span className="legend-item"><span className="dot-leg mission"></span> MISSION</span>
                             <span className="legend-item"><span className="dot-leg enemy"></span> ENEMY</span>
