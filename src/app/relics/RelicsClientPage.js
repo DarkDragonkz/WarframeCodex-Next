@@ -6,7 +6,7 @@ import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
 import RelicDetailModal from '@/components/RelicDetailModal'; 
 import '@/app/hud-layout.css'; 
-import './relics.css'; // IMPORTA IL NUOVO CSS
+import './relics.css'; // IMPORTANTE
 
 const STORAGE_KEY = 'warframe_codex_relics_v1';
 
@@ -34,12 +34,12 @@ export default function RelicsClientPage({ initialData = [] }) {
                 item.category === 'Relics'
             ).map(item => ({
                 ...item,
-                // Logica Vaulted
                 isVaulted: !item.drops || item.drops.length === 0,
-                // Nome pulito: "Lith G1 Relic (Intact)" -> "G1" e Era "Lith"
+                // Estrae "G1" da "Lith G1 Relic (Intact)"
+                code: item.name.split(' ')[1],
+                // Estrae "Lith"
                 era: item.name.split(' ')[0],
-                code: item.name.replace(' Relic (Intact)', '').split(' ')[1] || '??',
-                simpleName: item.name.replace(' Intact', '').replace(' Relic', '').trim()
+                simpleName: item.name.replace(' Relic (Intact)', '').trim()
             }));
 
             const eraOrder = { 'Lith': 1, 'Meso': 2, 'Neo': 3, 'Axi': 4, 'Requiem': 5 };
@@ -150,7 +150,7 @@ export default function RelicsClientPage({ initialData = [] }) {
                     totalCount={filteredData.length}
                     overscan={200}
                     components={{
-                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px', paddingBottom:'100px'}} />,
+                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px', paddingBottom:'100px'}} />,
                         Item: (props) => <div {...props} style={{...props.style, margin: 0}} />
                     }}
                     itemContent={(index) => {
@@ -180,7 +180,7 @@ export default function RelicsClientPage({ initialData = [] }) {
     );
 }
 
-// Nuova Card con Design Migliorato
+// Nuova Card con Design Aggiornato
 function RelicCard({ item, isOwned, onToggle }) {
     return (
         <div 
@@ -188,7 +188,6 @@ function RelicCard({ item, isOwned, onToggle }) {
             data-era={item.era}
         >
             <div className="relic-era-bar"></div>
-            <div className="relic-glow-bg"></div>
             
             <div className="relic-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
                 {isOwned ? '✓' : ''}
@@ -205,9 +204,9 @@ function RelicCard({ item, isOwned, onToggle }) {
             </div>
 
             <div className="relic-info">
-                <div className="relic-era-name">{item.era}</div>
+                <div className="relic-era-label">{item.era}</div>
                 <div className="relic-code">{item.code}</div>
-                <div className="relic-status">
+                <div className="relic-status-badge">
                     {item.isVaulted ? "VAULTED" : "AVAILABLE"}
                 </div>
             </div>
