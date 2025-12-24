@@ -10,7 +10,6 @@
 .relic-card-advanced {
     width: 100%;
     height: 260px;
-    /* Sfondo scuro con gradiente sottile */
     background: linear-gradient(145deg, #151518 0%, #0a0a0c 100%);
     border: 1px solid #333;
     border-radius: 4px;
@@ -23,21 +22,21 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
-/* Colori Era (Vars CSS) */
+/* Colori Era */
 .relic-card-advanced[data-era="Lith"] { --era-color: #a89686; --era-glow: rgba(168, 150, 134, 0.3); }
 .relic-card-advanced[data-era="Meso"] { --era-color: #c0c0c0; --era-glow: rgba(192, 192, 192, 0.3); }
 .relic-card-advanced[data-era="Neo"] { --era-color: #d4af37; --era-glow: rgba(212, 175, 55, 0.3); }
 .relic-card-advanced[data-era="Axi"] { --era-color: #b0c9ec; --era-glow: rgba(176, 201, 236, 0.3); }
 .relic-card-advanced[data-era="Requiem"] { --era-color: #ff4444; --era-glow: rgba(255, 68, 68, 0.3); }
 
-/* Hover Effect: Si illumina del colore dell'era */
+/* Hover Effect */
 .relic-card-advanced:hover {
     transform: translateY(-5px);
     border-color: var(--era-color);
     box-shadow: 0 0 20px var(--era-glow);
 }
 
-/* Barra Superiore Colorata */
+/* Barra Superiore */
 .relic-era-bar {
     height: 3px;
     width: 100%;
@@ -45,7 +44,7 @@
     box-shadow: 0 0 10px var(--era-color);
 }
 
-/* Checkbox (Posseduto) */
+/* Checkbox */
 .relic-check {
     position: absolute;
     top: 10px; right: 10px;
@@ -88,13 +87,14 @@
 
 /* Info Area */
 .relic-info {
-    padding: 12px;
+    padding: 15px; /* Più spazio dato che manca la scritta Available */
     background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.5) 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     border-top: 1px solid rgba(255,255,255,0.05);
+    min-height: 80px; /* Altezza minima garantita */
 }
 
 .relic-era-label {
@@ -107,44 +107,42 @@
 }
 
 .relic-code {
-    font-size: 28px;
+    font-size: 32px; /* Codice più grande per riempire lo spazio */
     font-weight: 900;
     color: #fff;
     line-height: 1;
     text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    margin: 2px 0 5px 0;
+    margin-top: 5px;
 }
 
-/* Status Badge (Vaulted/Available) */
-.relic-status-badge {
-    font-size: 9px;
-    padding: 2px 8px;
-    border-radius: 2px;
+/* SOLO PER VAULTED: Rosso e evidente */
+.relic-vaulted-label {
+    margin-top: 8px;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
     text-transform: uppercase;
-    font-weight: bold;
+    font-weight: 900;
     letter-spacing: 1px;
+    color: #ff4444; /* Testo Rosso */
+    border: 1px solid #ff4444; /* Bordo Rosso */
+    background: rgba(255, 68, 68, 0.15); /* Sfondo Rosso Trasparente */
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
 }
 
-/* STILE VAULTED (Grigio/Spento) */
+/* STILE CARD VAULTED (Grigio/Spento globale) */
 .relic-card-advanced.is-vaulted {
     border-color: #3a1a1a;
     background: linear-gradient(145deg, #120a0a 0%, #000 100%);
 }
 .relic-card-advanced.is-vaulted .relic-img {
-    filter: grayscale(100%) brightness(0.5) sepia(0.2) hue-rotate(-50deg);
-    opacity: 0.7;
+    filter: grayscale(100%) brightness(0.6) sepia(0.2);
+    opacity: 0.8;
 }
-.relic-card-advanced.is-vaulted .relic-era-bar { background: #552222; box-shadow: none; }
-.relic-card-advanced.is-vaulted .relic-code { color: #774444; }
-.relic-card-advanced.is-vaulted .relic-status-badge {
-    color: #ff4444;
-    border: 1px solid rgba(255, 68, 68, 0.3);
-    background: rgba(255, 68, 68, 0.05);
+.relic-card-advanced.is-vaulted .relic-era-bar { 
+    background: #552222; 
+    box-shadow: none; 
 }
-
-/* STILE AVAILABLE (Verde Tech) */
-.relic-card-advanced:not(.is-vaulted) .relic-status-badge {
-    color: #5fffa5;
-    background: rgba(95, 255, 165, 0.05);
-    border: 1px solid rgba(95, 255, 165, 0.2);
+.relic-card-advanced.is-vaulted .relic-code { 
+    color: #885555; 
 }

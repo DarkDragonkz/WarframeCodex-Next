@@ -6,7 +6,7 @@ import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
 import RelicDetailModal from '@/components/RelicDetailModal'; 
 import '@/app/hud-layout.css'; 
-import './relics.css'; // Assicurati che questo file esista (lo abbiamo creato nello step della grafica)
+import './relics.css'; 
 
 const STORAGE_KEY = 'warframe_codex_relics_v1';
 
@@ -15,7 +15,6 @@ export default function RelicsClientPage({ initialData = [] }) {
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
 
-    // Filtri
     const [currentEra, setCurrentEra] = useState('all'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -26,13 +25,11 @@ export default function RelicsClientPage({ initialData = [] }) {
     
     const [selectedItem, setSelectedItem] = useState(null);
 
-    // Debounce
     useEffect(() => {
         const timer = setTimeout(() => { setDebouncedSearch(searchTerm); }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // Inizializzazione Dati
     useEffect(() => {
         if(initialData && initialData.length > 0) {
             const processed = initialData.filter(item => 
@@ -40,16 +37,12 @@ export default function RelicsClientPage({ initialData = [] }) {
                 item.category === 'Relics'
             ).map(item => ({
                 ...item,
-                // Calcolo Vaulted
                 isVaulted: !item.drops || item.drops.length === 0,
-                // Parsing per grafica avanzata
-                era: item.name.split(' ')[0], // "Lith"
-                code: item.name.split(' ')[1], // "G1"
-                // Nome pulito per ricerca
+                era: item.name.split(' ')[0], 
+                code: item.name.split(' ')[1], 
                 simpleName: item.name.replace(' Intact', '').replace(' Relic', '').trim()
             }));
 
-            // Ordina per Era e poi per Nome
             const eraOrder = { 'Lith': 1, 'Meso': 2, 'Neo': 3, 'Axi': 4, 'Requiem': 5 };
             processed.sort((a, b) => {
                 if (eraOrder[a.era] !== eraOrder[b.era]) return (eraOrder[a.era] || 9) - (eraOrder[b.era] || 9);
@@ -66,7 +59,6 @@ export default function RelicsClientPage({ initialData = [] }) {
         }
     }, [initialData]);
 
-    // Salvataggio
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             const handler = setTimeout(() => {
@@ -76,18 +68,12 @@ export default function RelicsClientPage({ initialData = [] }) {
         }
     }, [ownedCards, loading]);
 
-    // FILTRAGGIO
     const filteredData = useMemo(() => {
         return rawApiData.filter(item => {
             if (debouncedSearch && !item.simpleName.toLowerCase().includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
-            
-            // LOGICA SHOW VAULTED: Se showVaulted è false, nascondi item.isVaulted
             if (!showVaulted && item.isVaulted) return false;
-
-            if (currentEra !== 'all') {
-                if (!item.name.startsWith(currentEra)) return false;
-            }
+            if (currentEra !== 'all' && item.era !== currentEra) return false;
             return true;
         });
     }, [rawApiData, currentEra, debouncedSearch, showMissingOnly, showVaulted, ownedCards]);
@@ -145,7 +131,6 @@ export default function RelicsClientPage({ initialData = [] }) {
                             />
                         </div>
                         
-                        {/* CHECKBOX SHOW VAULTED AGGIORNATA */}
                         <label className="toggle-filter">
                             <input type="checkbox" style={{display:'none'}} checked={showVaulted} onChange={(e) => setShowVaulted(e.target.checked)} />
                             <div className="checkbox-custom">{showVaulted && '✓'}</div>
@@ -175,7 +160,6 @@ export default function RelicsClientPage({ initialData = [] }) {
                         const item = filteredData[index];
                         return (
                             <div onClick={() => setSelectedItem(item)} style={{height: '100%'}}>
-                                {/* QUI USIAMO LA CARD AVANZATA */}
                                 <RelicCardAdvanced 
                                     item={item} 
                                     isOwned={ownedCards.has(item.uniqueName)} 
@@ -199,7 +183,7 @@ export default function RelicsClientPage({ initialData = [] }) {
     );
 }
 
-// --- CARD AVANZATA (GRAFICA FIGA) ---
+// --- CARD AVANZATA (PULITA) ---
 function RelicCardAdvanced({ item, isOwned, onToggle }) {
     return (
         <div 
@@ -207,7 +191,6 @@ function RelicCardAdvanced({ item, isOwned, onToggle }) {
             data-era={item.era}
         >
             <div className="relic-era-bar"></div>
-            <div className="relic-glow-bg"></div>
             
             <div className="relic-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
                 {isOwned ? '✓' : ''}
@@ -224,11 +207,13 @@ function RelicCardAdvanced({ item, isOwned, onToggle }) {
             </div>
 
             <div className="relic-info">
-                <div className="relic-era-name">{item.era}</div>
+                <div className="relic-era-label">{item.era}</div>
                 <div className="relic-code">{item.code}</div>
-                <div className="relic-status">
-                    {item.isVaulted ? "VAULTED" : "AVAILABLE"}
-                </div>
+                
+                {/* MOSTRA SOLO SE VAULTED */}
+                {item.isVaulted && (
+                    <div className="relic-vaulted-label">VAULTED</div>
+                )}
             </div>
         </div>
     );
