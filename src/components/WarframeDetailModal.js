@@ -4,11 +4,25 @@ import Image from 'next/image';
 import { IMG_BASE_URL, API_BASE_URL } from '@/utils/constants';
 import './WarframeDetailModal.css';
 
+// LISTA ESTESA DI RISORSE DA NASCONDERE
 const HIDDEN_RESOURCES = [
+    // Risorse Comuni/Non Comuni/Rare
     'Orokin Cell', 'Argon Crystal', 'Neural Sensors', 'Neurodes', 
     'Plastids', 'Rubedo', 'Ferrite', 'Alloy Plate', 'Polymer Bundle', 
     'Circuits', 'Salvage', 'Morphics', 'Control Module', 'Gallium', 
-    'Nitain Extract', 'Tellurium', 'Cryotic', 'Oxium'
+    'Nitain Extract', 'Tellurium', 'Cryotic', 'Oxium', 'Nano Spores',
+    'Detonite Ampule', 'Fieldron Sample', 'Mutagen Sample',
+    
+    // Clan Tech & Speciali
+    'Detonite Injector', 'Fieldron', 'Mutagen Mass', 'Forma', 'Kuva',
+    'Void Traces', 'Credits', 'Endo', 'Synthetic Eidolon Shard',
+    
+    // Open World (Piane/Vallis/Deimos)
+    'Iradite', 'Grokdrul', 'Maprico', 'Nistlepod', 'Condroc Wing', 
+    'Kuaka Spinal Claw', 'Breath of the Eidolon', 'Eidolon Shard', 'Cetus Wisp',
+    'Gorgaricus Spore', 'Mytocardia Spore', 'Thermal Sludge', 'Tepa Nodule',
+    'Hexenon', 'Carbides', 'Cubic Diodes', 'Pustrels', 'Copernics', 
+    'Isos', 'Aucrux Capacitors', 'Komms', 'Nullstones'
 ];
 
 export default function WarframeDetailModal({ item, onClose, ownedItems, onToggle }) {
@@ -63,6 +77,17 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
         if (fullComponentName.match(/Neuroptics/i)) return "NEURO";
         if (fullComponentName.match(/Harness/i)) return "HARNESS";
         if (fullComponentName.match(/Wings/i)) return "WINGS";
+        
+        // Per le armi, puliamo nomi comuni
+        if (fullComponentName.match(/Barrel/i)) return "BARREL";
+        if (fullComponentName.match(/Receiver/i)) return "RECEIVER";
+        if (fullComponentName.match(/Stock/i)) return "STOCK";
+        if (fullComponentName.match(/Handle/i)) return "HANDLE";
+        if (fullComponentName.match(/Blade/i)) return "BLADE";
+        if (fullComponentName.match(/Grip/i)) return "GRIP";
+        if (fullComponentName.match(/String/i)) return "STRING";
+        if (fullComponentName.match(/Limb/i)) return "LIMB";
+        
         if (!clean || clean.length < 2) return "MAIN BP";
         return clean.toUpperCase();
     }
@@ -132,6 +157,15 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
             const neededIDs = new Set();
             const relicToPartMap = {}; 
             
+            // Helper check risorsa
+            const isHiddenResource = (name) => {
+                const n = name.toLowerCase().trim();
+                return HIDDEN_RESOURCES.some(h => {
+                    const hLower = h.toLowerCase();
+                    return n === hLower || n === hLower + 's'; // Controlla anche plurale
+                });
+            };
+
             const scan = (drops, partNameLabel) => {
                 (drops || []).forEach(d => {
                     const id = getStandardID(d.location);
@@ -146,7 +180,12 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                 });
             };
 
-            (item.components || []).forEach(c => { if(!HIDDEN_RESOURCES.includes(c.name)) scan(c.drops, c.name); });
+            // SCAN COMPONENTI (Filtrando risorse)
+            (item.components || []).forEach(c => { 
+                if(!isHiddenResource(c.name)) {
+                    scan(c.drops, c.name);
+                }
+            });
             scan(item.drops, "MAIN BP");
             setSavedPartMap(relicToPartMap);
 
@@ -229,10 +268,17 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
             drops: mainBpDrops 
         });
 
-        const subs = (item.components || []).filter(comp => 
-            !HIDDEN_RESOURCES.includes(comp.name) && 
-            !comp.name.toLowerCase().includes('blueprint') 
-        );
+        // FILTRO MIGLIORATO PER NASCONDERE RISORSE
+        const subs = (item.components || []).filter(comp => {
+            const nameLower = comp.name.toLowerCase().trim();
+            const isResource = HIDDEN_RESOURCES.some(h => {
+                const hLower = h.toLowerCase();
+                return nameLower === hLower || nameLower === hLower + 's';
+            });
+            const isBp = nameLower.includes('blueprint');
+            return !isResource && !isBp;
+        });
+        
         fullComponentsList = [...fullComponentsList, ...subs];
     }
     
@@ -256,7 +302,7 @@ export default function WarframeDetailModal({ item, onClose, ownedItems, onToggl
                             <h2 className="modal-title">{item.name}</h2>
                             <div className="type-pill">{item.type}</div>
                             
-                            {/* BADGE AVAILABLE/VAULTED SPOSTATO QUI */}
+                            {/* BADGE AVAILABLE/VAULTED */}
                             <div style={{marginTop:'10px'}}>
                                 {isVaulted 
                                     ? <div className="vault-badge is-vaulted">VAULTED</div> 
