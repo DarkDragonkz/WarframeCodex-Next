@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
 import '@/app/hud-layout.css'; 
 import './mods.css';
@@ -12,95 +14,90 @@ export default function ModsClientPage({ initialData = [] }) {
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
 
-    // Filtri
     const [currentCategory, setCurrentCategory] = useState('all');
-    
-    // Ricerca con Debounce
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-
     const [currentSort, setCurrentSort] = useState('name');
     const [showMissingOnly, setShowMissingOnly] = useState(false);
-    const [visibleCount, setVisibleCount] = useState(60);
 
-    // Debounce Effect
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-        }, 300);
+        const timer = setTimeout(() => { setDebouncedSearch(searchTerm); }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // 1. Inizializzazione Dati (da Props)
+    // INIZIALIZZAZIONE DATI
     useEffect(() => {
         if(initialData && initialData.length > 0) {
-            const processed = [];
-            const ids = new Set();
-
+            const uniqueMap = new Map();
             initialData.forEach(item => {
-                if (!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
-                if (item.uniqueName && item.uniqueName.toLowerCase().includes("setmod")) return;
-                if (ids.has(item.name)) return; 
+                if(!item.imageName || item.name.includes("Riven") || (item.uniqueName && item.uniqueName.includes("/PVP"))) return;
                 
-                ids.add(item.name);
+                let cleanDesc = "";
+                if (item.description) {
+                    cleanDesc = Array.isArray(item.description) ? item.description.join(" ") : item.description;
+                }
                 
-                const dropLocs = item.drops ? item.drops.map(d => d.location).join(" ") : "";
-                // Pre-calcolo stringa ricerca
-                item.searchString = `${item.name} ${item.type} ${item.category || ""} ${dropLocs}`.toLowerCase();
-                item.maxRank = (typeof item.fusionLimit === 'number') ? item.fusionLimit : 5;
-                
-                processed.push(item);
+                if ((!cleanDesc || cleanDesc === "") && item.levelStats && item.levelStats.length > 0) {
+                    const lastStat = item.levelStats[item.levelStats.length - 1];
+                    if (lastStat && lastStat.stats) {
+                        cleanDesc = lastStat.stats.join(" ");
+                    }
+                }
+
+                if(!uniqueMap.has(item.name)) {
+                    uniqueMap.set(item.name, {
+                        ...item,
+                        description: cleanDesc,
+                        maxRank: (typeof item.fusionLimit === 'number') ? item.fusionLimit : 5,
+                        baseDrain: item.baseDrain || 2,
+                        searchStr: `${item.name} ${item.type} ${item.category}`.toLowerCase()
+                    });
+                }
             });
-            processed.sort((a, b) => a.name.localeCompare(b.name));
+            const processed = Array.from(uniqueMap.values()).sort((a,b) => a.name.localeCompare(b.name));
             setRawApiData(processed);
             setLoading(false);
         }
 
-        // Carica salvataggi locali
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) { console.error(e); }
+            try { setOwnedCards(new Set(JSON.parse(saved))); } catch (e) {}
         }
     }, [initialData]);
 
-    // 2. Salvataggio automatico
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedCards]));
         }
     }, [ownedCards, loading]);
 
-    // 3. Logica Filtri
     const filteredData = useMemo(() => {
         let data = rawApiData.filter(item => {
-            // Usa debouncedSearch
-            if (debouncedSearch && !item.searchString.includes(debouncedSearch)) return false;
+            if (debouncedSearch && !item.searchStr.includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
-            
+
             const t = (item.type || "").toLowerCase();
-            const slot = (item.slot || "").toLowerCase();
             const cat = (item.category || "").toLowerCase();
+            const slot = (item.slot || "").toLowerCase();
             const isAugment = item.isAugment || item.name.includes("Augment");
-            const isAura = t.includes("aura") || slot === "aura";
             const isArcane = cat.includes("arcane") || t.includes("arcane");
 
             switch (currentCategory) {
                 case 'all': return true;
-                case 'warframe': return t.includes("warframe") && !isAura && !isAugment && !isArcane;
-                case 'aura': return isAura;
+                case 'warframe': return t.includes("warframe") && !isAugment && !isArcane;
+                case 'aura': return t.includes("aura") || slot === "aura";
                 case 'augment': return isAugment;
                 case 'arcane': return isArcane;
                 case 'primary': return (t.includes("rifle") || t.includes("bow") || t.includes("shotgun") || t.includes("sniper")) && !isAugment;
                 case 'secondary': return (t.includes("pistol") || t.includes("secondary")) && !isAugment;
-                case 'melee': return (t.includes("melee")) && !isAugment;
-                case 'exilus': return item.isExilus || slot === "exilus";
+                case 'melee': return t.includes("melee") && !isAugment;
                 case 'companion': return t.includes("companion") || t.includes("sentinel") || t.includes("beast");
                 case 'archwing': return t.includes("archwing") || t.includes("arch-gun");
                 default: return true;
             }
         });
 
-        const rarityMap = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Legendary': 4 };
+        const rarityMap = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Legendary': 4, 'Arcane': 5 };
         data.sort((a, b) => {
             if (currentSort === 'name') return a.name.localeCompare(b.name);
             if (currentSort === 'drain') return (b.baseDrain || 0) - (a.baseDrain || 0);
@@ -110,15 +107,10 @@ export default function ModsClientPage({ initialData = [] }) {
                 if (rA !== rB) return rB - rA;
                 return a.name.localeCompare(b.name);
             }
-            if (currentSort === 'chance') {
-                const maxA = a.drops && a.drops.length ? Math.max(...a.drops.map(d=>d.chance)) : 0;
-                const maxB = b.drops && b.drops.length ? Math.max(...b.drops.map(d=>d.chance)) : 0;
-                return maxA - maxB;
-            }
             return 0;
         });
         return data;
-    }, [rawApiData, currentCategory, debouncedSearch, currentSort, showMissingOnly, ownedCards]);
+    }, [rawApiData, debouncedSearch, currentCategory, currentSort, showMissingOnly, ownedCards]);
 
     const toggleOwned = (id) => {
         const newSet = new Set(ownedCards);
@@ -128,7 +120,7 @@ export default function ModsClientPage({ initialData = [] }) {
 
     const pct = rawApiData.length > 0 ? Math.round((ownedCards.size / rawApiData.length) * 100) : 0;
 
-    if (loading) return <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>PROCESSING ORDIS DATA...</div>;
+    if (loading) return <div style={{color:'#fff', padding:'50px', textAlign:'center'}}>LOADING MOD MODULES...</div>;
 
     return (
         <div className="codex-layout">
@@ -151,13 +143,13 @@ export default function ModsClientPage({ initialData = [] }) {
                 </div>
 
                 <div className="controls-row">
-                    <div className="filters-left" style={{overflowX:'auto', maxWidth:'60%'}}>
-                        <div className="category-tabs" style={{flexWrap:'nowrap'}}>
-                            {['all','warframe','aura','augment','arcane','primary','secondary','melee','exilus','companion','archwing'].map(cat => (
+                    <div className="filters-left" style={{overflowX:'auto'}}>
+                        <div className="category-tabs">
+                            {['all','warframe','aura','augment','arcane','primary','secondary','melee','companion','archwing'].map(cat => (
                                 <button 
                                     key={cat}
                                     className={`tab-btn ${currentCategory === cat ? 'active' : ''}`}
-                                    onClick={() => { setCurrentCategory(cat); setVisibleCount(60); }}
+                                    onClick={() => setCurrentCategory(cat)}
                                 >
                                     {cat.toUpperCase()}
                                 </button>
@@ -166,15 +158,9 @@ export default function ModsClientPage({ initialData = [] }) {
                     </div>
                     
                     <div className="filters-right">
-                        <div className="legend-box">
-                            <div className="legend-item"><span className="dot-leg mission"></span>MISSION</div>
-                            <div className="legend-item"><span className="dot-leg enemy"></span>ENEMY</div>
-                            <div className="legend-item"><span className="dot-leg shop"></span>SHOP</div>
-                        </div>
-
                         <div className="search-wrapper">
                             <input 
-                                type="text" className="search-input" placeholder="SEARCH..." 
+                                type="text" className="search-input" placeholder="SEARCH MOD..." 
                                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} 
                             />
                         </div>
@@ -188,158 +174,199 @@ export default function ModsClientPage({ initialData = [] }) {
                             <option value="name">NAME</option>
                             <option value="rarity">RARITY</option>
                             <option value="drain">COST</option>
-                            <option value="chance">DROP %</option>
                         </select>
 
-                        <label className="toggle-filter">
+                        <label className="toggle-filter" style={{display:'flex', alignItems:'center', gap:'5px', color:'#ccc', fontSize:'10px', fontWeight:'bold', cursor:'pointer', border:'1px solid #444', padding:'5px 10px', borderRadius:'4px', background: showMissingOnly ? 'rgba(255,255,255,0.1)' : 'transparent'}}>
                             <input type="checkbox" style={{display:'none'}} checked={showMissingOnly} onChange={(e) => setShowMissingOnly(e.target.checked)} />
-                            <div className="checkbox-custom">{showMissingOnly && '✓'}</div>
-                            MISSING
+                            <span style={{color: showMissingOnly ? '#5fffa5' : '#666'}}>
+                                {showMissingOnly ? '✓ MISSING ONLY' : 'SHOW MISSING'}
+                            </span>
                         </label>
                     </div>
                 </div>
                 <div className="progress-line-container"><div className="progress-line-fill" style={{width: `${pct}%`}}></div></div>
             </div>
 
-            <div 
-                className="gallery-scroll-area" 
-                onScroll={(e) => {
-                    if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight - 500) setVisibleCount(p => p + 60);
-                }}
-            >
-                <div className="card-gallery">
-                    {filteredData.slice(0, visibleCount).map(item => (
-                        <ModCard 
-                            key={item.uniqueName} 
-                            item={item} 
-                            isOwned={ownedCards.has(item.uniqueName)} 
-                            onToggle={() => toggleOwned(item.uniqueName)}
-                        />
-                    ))}
-                </div>
+            <div className="gallery-scroll-area">
+                <VirtuosoGrid
+                    style={{ height: '100%', width: '100%' }}
+                    totalCount={filteredData.length}
+                    overscan={200}
+                    components={{
+                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'flex', flexWrap: 'wrap', justifyContent:'center', gap:'25px', paddingBottom: '100px'}} />,
+                        Item: (props) => <div {...props} style={{...props.style, margin: 0}} />
+                    }}
+                    itemContent={(index) => {
+                        const item = filteredData[index];
+                        return (
+                            <div style={{padding:'0'}}>
+                                <ModCard 
+                                    item={item} 
+                                    isOwned={ownedCards.has(item.uniqueName)} 
+                                    onToggle={() => toggleOwned(item.uniqueName)} 
+                                />
+                            </div>
+                        );
+                    }}
+                />
             </div>
         </div>
     );
 }
 
-// --- MOD CARD COMPONENT (Stesso di prima) ---
+// --- MOD CARD COMPONENT ---
 function ModCard({ item, isOwned, onToggle }) {
     const [flipped, setFlipped] = useState(false);
-    const [rank, setRank] = useState(0);
     const maxRank = item.maxRank || 0;
+    const [rank, setRank] = useState(0); 
 
     const getDescription = () => {
-        let desc = item.description || "";
         if (item.levelStats && item.levelStats.length > 0) {
             const statIndex = Math.min(rank, item.levelStats.length - 1);
-            return item.levelStats[statIndex].stats.join('<br>');
+            if(item.levelStats[statIndex] && item.levelStats[statIndex].stats) {
+                return item.levelStats[statIndex].stats.join(" ")
+                    .replace(/(\d+(\.\d+)?%?)/g, "<b>$1</b>")
+                    .replace(/\r\n|\n/g, "<br>");
+            }
         }
-        return desc.replace(/(\d+(\.\d+)?)/g, (match) => {
-            const maxVal = parseFloat(match);
-            const baseVal = maxVal / (maxRank + 1);
-            const currentVal = baseVal * (rank + 1);
-            return currentVal % 1 === 0 ? currentVal.toFixed(0) : currentVal.toFixed(1).replace(/\.0$/, '');
+        if(!item.description) return "Description unavailable.";
+        return item.description.replace(/(\d+(\.\d+)?)/g, (match) => {
+            const val = parseFloat(match);
+            if(isNaN(val) || val > 1000) return match; 
+            const scaled = (val / (maxRank + 1)) * (rank + 1);
+            if(!isFinite(scaled)) return match;
+            const fmt = Number.isInteger(scaled) ? scaled : scaled.toFixed(1).replace(/\.0$/, '');
+            return `<b>${fmt}</b>`;
         }).replace(/\r\n|\n/g, "<br>");
     };
 
-    const currentDrain = (item.baseDrain || 0) + rank;
-    const imgUrl = `${IMG_BASE_URL}/${item.imageName}`;
+    const wikiUrl = `https://warframe.fandom.com/wiki/${item.name.replace(/ /g, '_')}`;
     
-    const rarity = item.rarity || "Common";
-    let nameColor = '#fff';
-    if (rarity === 'Rare') nameColor = '#f0e68c';
-    if (rarity === 'Legendary') nameColor = '#b0c9ec';
-    if (item.category === 'Arcanes') nameColor = '#00ffcc';
-
-    const openWiki = (e) => {
-        e.stopPropagation();
-        const safeName = item.name.replace(/ /g, '_');
-        window.open(`https://warframe.fandom.com/wiki/${safeName}`, '_blank');
+    const getPolarityIcon = () => {
+        if (!item.polarity) return null;
+        let p = item.polarity.toLowerCase().trim();
+        if(p === 'universal') p = 'any';
+        const capitalized = p.charAt(0).toUpperCase() + p.slice(1);
+        return `/Polarity/${capitalized}.svg`;
     };
 
+    const polIconUrl = getPolarityIcon();
+    const currentDrain = (item.baseDrain || 0) + rank;
+
+    const increaseRank = (e) => { e.stopPropagation(); setRank(Math.min(maxRank, rank + 1)); };
+    const decreaseRank = (e) => { e.stopPropagation(); setRank(Math.max(0, rank - 1)); };
+
     const renderDrops = () => {
-        if (!item.drops || item.drops.length === 0) return <div className="mod-no-drop">Source Unknown / Quest / Market</div>;
-        const getDropType = (d) => d.location.includes("Rot") || d.type?.includes("Mission") ? 'mission' : 'enemy';
-        return item.drops.slice(0, 8).map((d, i) => {
-            const type = getDropType(d);
-            const barColor = type === 'mission' ? 'var(--mission)' : 'var(--enemy)';
-            
-            return (
-                <div key={i} className="mod-drop-row">
-                    <div className="mod-drop-header">
-                        <span className="mod-drop-loc">
-                            <span className={`dot-leg ${type}`} style={{display:'inline-block', marginRight:'5px'}}></span>
-                            {d.location}
-                        </span>
-                        <span className="mod-drop-pct">{(d.chance * 100).toFixed(2)}%</span>
-                    </div>
-                    <div className="mod-drop-bar-bg">
-                        <div className="mod-drop-bar-fill" style={{width:`${Math.min(100, d.chance * 100 * 4)}%`, background: barColor}}></div>
-                    </div>
+        if (!item.drops || item.drops.length === 0) return <div style={{padding:'20px', fontStyle:'italic', color:'#555', textAlign:'center'}}>Source Unknown / Quest / Market</div>;
+        return item.drops.slice(0, 8).map((d, i) => (
+            <div key={i} className="drop-item">
+                <div className="drop-name">
+                    <span>{d.location}</span>
+                    <span className="drop-chance">{(d.chance * 100).toFixed(2)}%</span>
                 </div>
-            );
-        });
+                <div className="drop-meta">
+                    <span>{d.type} {d.rotation ? `(Rot ${d.rotation})` : ''}</span>
+                    <span style={{color: getRarityColor(d.rarity)}}>{d.rarity}</span>
+                </div>
+            </div>
+        ));
     };
 
     return (
         <div 
             className={`mod-card-wrapper ${isOwned ? 'owned' : ''} ${flipped ? 'flipped' : ''}`}
-            data-rarity={rarity}
+            data-rarity={item.rarity || 'Common'}
             onClick={() => setFlipped(!flipped)}
         >
             <div className="mod-card-inner">
-                {/* FRONT */}
+                
+                {/* FRONT (Full Art Layout) */}
                 <div className="mod-card-front">
-                    <div className="mod-owned-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
-                        {isOwned ? '✔' : '+'}
-                    </div>
-                    <div className="mod-drain-box">
-                        {currentDrain} {item.polarity && <span style={{fontSize:'10px'}}>{item.polarity.substring(0,1)}</span>}
-                    </div>
                     
-                    <div className="mod-card-img-container">
-                        <img 
-                            src={imgUrl} 
-                            className="mod-card-img" 
+                    {/* 1. IMAGE BACKGROUND */}
+                    <div className="mod-image-area">
+                        <Image 
+                            src={`${IMG_BASE_URL}/${item.imageName}`} 
                             alt={item.name} 
-                            loading="lazy" 
-                            onError={(e)=>{e.target.style.display='none';}} 
+                            fill
+                            className="mod-img"
+                            unoptimized
                         />
                     </div>
 
-                    <div className="mod-info-area">
-                        <div className="mod-type-pill">{item.type}</div>
-                        <div className="mod-name" style={{color: nameColor}}>{item.name}</div>
-                        <div className="mod-desc" dangerouslySetInnerHTML={{__html: getDescription()}}></div>
+                    {/* 2. TOP HEADER (Floating) */}
+                    <div className="mod-top-bar">
+                        <div className="mod-status-btn" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+                            {isOwned ? '✔' : '+'}
+                        </div>
+                        <div className="mod-drain-box">
+                            <span>{currentDrain}</span>
+                            {polIconUrl && (
+                                <img 
+                                    src={polIconUrl} 
+                                    alt={item.polarity} 
+                                    className="mod-polarity-icon" 
+                                    onError={(e) => e.target.style.display='none'} 
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 3. INFO OVERLAY (Bottom) */}
+                    <div className="mod-info-front">
+                        <div className="mod-type-badge">{item.type}</div>
+                        <div className="mod-name" style={{color: getRarityColor(item.rarity)}}>{item.name}</div>
+                        
+                        <div className="mod-desc-text" dangerouslySetInnerHTML={{__html: getDescription()}} />
 
                         {maxRank > 0 && (
                             <div className="mod-rank-controls" onClick={(e) => e.stopPropagation()}>
-                                <button className="mod-rank-btn" onClick={() => setRank(Math.max(0, rank - 1))}>-</button>
-                                <div className="mod-ranks-dots">
-                                    {Array.from({length: maxRank + 1}).map((_, i) => (
-                                        <div key={i} className={`mod-dot ${i <= rank && i > 0 ? 'active' : ''}`}></div>
+                                <div className="rank-buttons-row">
+                                    <div className="rank-btn" onClick={decreaseRank}>-</div>
+                                    <div className="rank-label">RANK {rank}/{maxRank}</div>
+                                    <div className="rank-btn" onClick={increaseRank}>+</div>
+                                </div>
+                                <div className="mod-rank-dots-container">
+                                    {Array.from({length: maxRank}).map((_, i) => (
+                                        <div key={i} className={`rank-dot ${i < rank ? 'active' : ''}`}></div>
                                     ))}
                                 </div>
-                                <button className="mod-rank-btn" onClick={() => setRank(Math.min(maxRank, rank + 1))}>+</button>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* BACK */}
+                {/* BACK (Standard) */}
                 <div className="mod-card-back">
                     <div className="mod-back-header">
-                        <div className="mod-back-title">ACQUISITION</div>
-                        {item.tradable && <span className="mod-trade-badge">TRADE</span>}
+                        <span className="back-title">DROP SOURCES</span>
+                        <span className="flip-icon" onClick={(e) => { e.stopPropagation(); setFlipped(false); }}>↺</span>
                     </div>
-                    <div className="mod-source-content">
+                    <div className="mod-drops-list">
                         {renderDrops()}
                     </div>
-                    <div className="mod-wiki-btn" onClick={openWiki}>
+                    <a 
+                        href={wikiUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="mod-wiki-link"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         OPEN WIKI
-                    </div>
+                    </a>
                 </div>
+
             </div>
         </div>
     );
+}
+
+function getRarityColor(rarity) {
+    switch(rarity) {
+        case 'Rare': return '#d4af37';
+        case 'Legendary': return '#b0c9ec';
+        case 'Arcane': return '#00ffcc';
+        case 'Uncommon': return '#c0c0c0';
+        default: return '#fff';
+    }
 }
