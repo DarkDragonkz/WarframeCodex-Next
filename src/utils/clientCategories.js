@@ -1,101 +1,106 @@
-// src/utils/clientCategories.js
+// src/utils/categoryConfig.js
 
-// Funzione helper per identificare rigorosamente un Necramech
+// --- HELPER FILTERS ---
 const isNecramech = (item) => {
-    const type = (item.type || "").toLowerCase();
-    const name = item.name.toLowerCase();
-    if (type.includes('necramech')) return true;
-    if (name === 'bonewidow' || name === 'voidrig') return true;
-    return false;
+    const t = (item.type || "").toLowerCase();
+    const n = item.name.toLowerCase();
+    return t.includes('necramech') || n === 'voidrig' || n === 'bonewidow';
 };
 
-export const CATEGORY_CONFIGS = {
-    'warframes': [
-        {
-            id: 'all', label: 'ALL',
-            filter: (item) => {
-                const type = (item.type || "").toLowerCase();
-                return type.includes('warframe') && item.category === 'Warframes' && !isNecramech(item);
-            }
-        },
-        {
-            id: 'base', label: 'BASE',
-            filter: (item) => {
-                const type = (item.type || "").toLowerCase();
-                return type.includes('warframe') && item.category === 'Warframes' && !item.name.includes('Prime') && !isNecramech(item);
-            }
-        },
-        {
-            id: 'prime', label: 'PRIME',
-            filter: (item) => {
-                const type = (item.type || "").toLowerCase();
-                return type.includes('warframe') && item.category === 'Warframes' && item.name.includes('Prime') && !isNecramech(item);
-            }
-        }
-    ],
-    'primary': [
-        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Primary' },
-        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Primary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
-        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Primary' && item.name.includes('Prime') }
-    ],
-    'secondary': [
-        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Secondary' },
-        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Secondary' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
-        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Secondary' && item.name.includes('Prime') }
-    ],
-    'melee': [
-        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Melee' },
-        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Melee' && !item.name.includes('Prime') && !item.name.includes('Vandal') && !item.name.includes('Wraith') },
-        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Melee' && item.name.includes('Prime') }
-    ],
-    'companions': [
-        { id: 'all', label: 'ALL', filter: (item) => item.category === 'Sentinels' },
-        { id: 'base', label: 'BASE', filter: (item) => item.category === 'Sentinels' && !item.name.includes('Prime') },
-        { id: 'prime', label: 'PRIME', filter: (item) => item.category === 'Sentinels' && item.name.includes('Prime') }
-    ],
-    'relics': [
-        {
-            id: 'lith', label: 'LITH', filter: (i) => i.name.includes('Lith'),
-            subFilters: [
-                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
-                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-                { id: 'everything', label: 'ALL', filter: () => true }
-            ]
-        },
-        {
-            id: 'meso', label: 'MESO', filter: (i) => i.name.includes('Meso'),
-            subFilters: [
-                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
-                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-                { id: 'everything', label: 'ALL', filter: () => true }
-            ]
-        },
-        {
-            id: 'neo', label: 'NEO', filter: (i) => i.name.includes('Neo'),
-            subFilters: [
-                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
-                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-                { id: 'everything', label: 'ALL', filter: () => true }
-            ]
-        },
-        {
-            id: 'axi', label: 'AXI', filter: (i) => i.name.includes('Axi'),
-            subFilters: [
-                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
-                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-                { id: 'everything', label: 'ALL', filter: () => true }
-            ]
-        },
-        {
-            id: 'requiem', label: 'REQUIEM', filter: (i) => i.name.includes('Requiem'),
-            subFilters: [
-                { id: 'all', label: 'INTACT', filter: (i) => i.name.includes('Intact') },
-                { id: 'radiant', label: 'RADIANT', filter: (i) => i.name.includes('Radiant') },
-                { id: 'everything', label: 'ALL', filter: () => true }
-            ]
-        }
-    ],
-    'necramechs': [
-         { id: 'all', label: 'NECRAMECHS', filter: (item) => isNecramech(item) }
-    ]
+const isArchwing = (item) => (item.type || "").toLowerCase().includes('archwing') && !isNecramech(item);
+
+// --- CONFIGURAZIONE GERARCHICA ---
+export const HIERARCHY = [
+    {
+        id: 'arsenal',
+        title: 'ARSENAL',
+        subtitle: 'WEAPONS & GEAR',
+        color: '#ff6b6b',
+        // Immagine di copertina suggerita (item name) per la card
+        coverItem: 'Braton Prime', 
+        jsonFile: 'Primary.json', // File usato solo per prendere l'immagine di copertina
+        items: [
+            { id: 'primary', title: 'Primary', json: 'Primary.json', filter: (i) => i.category === 'Primary' },
+            { id: 'secondary', title: 'Secondary', json: 'Secondary.json', filter: (i) => i.category === 'Secondary' },
+            { id: 'melee', title: 'Melee', json: 'Melee.json', filter: (i) => i.category === 'Melee' },
+            { id: 'arch-gun', title: 'Arch-Gun', json: 'Primary.json', filter: (i) => (i.type || "").includes('Arch-Gun') },
+            { id: 'arch-melee', title: 'Arch-Melee', json: 'Melee.json', filter: (i) => (i.type || "").includes('Arch-Melee') },
+        ]
+    },
+    {
+        id: 'entities',
+        title: 'ENTITIES',
+        subtitle: 'WARFRAMES & COMPANIONS',
+        color: '#d4af37',
+        coverItem: 'Excalibur Prime',
+        jsonFile: 'Warframes.json',
+        items: [
+            { id: 'warframes', title: 'Warframes', json: 'Warframes.json', filter: (i) => (i.type || "").includes('Warframe') && !isNecramech(i) },
+            { id: 'necramechs', title: 'Necramechs', json: 'Warframes.json', filter: (i) => isNecramech(i) },
+            { id: 'archwings', title: 'Archwings', json: 'Warframes.json', filter: (i) => isArchwing(i) },
+            { id: 'sentinels', title: 'Sentinels', json: 'Sentinels.json', filter: (i) => (i.type || "").includes('Sentinel') },
+            { id: 'pets', title: 'Pets', json: 'Sentinels.json', filter: (i) => ['Kubrow', 'Kavat', 'Predasite', 'Vulpaphyla'].some(k => (i.type || "").includes(k)) }
+        ]
+    },
+    {
+        id: 'upgrades',
+        title: 'UPGRADES',
+        subtitle: 'MODS & RELICS',
+        color: '#54a0ff',
+        coverItem: 'Blind Rage',
+        jsonFile: 'Mods.json',
+        items: [
+            { id: 'mods', title: 'Mods', json: 'Mods.json', specialPage: 'mods' }, // specialPage indica che userà un componente custom
+            { id: 'arcanes', title: 'Arcanes', json: 'Arcanes.json', specialPage: 'mods' }, // Usa lo stesso layout delle mod
+            { id: 'relics', title: 'Relics', json: 'Relics.json', specialPage: 'relics' }
+        ]
+    },
+    {
+        id: 'inventory',
+        title: 'INVENTORY',
+        subtitle: 'RESOURCES & GEAR',
+        color: '#1dd1a1',
+        coverItem: 'Orokin Cell',
+        jsonFile: 'Resources.json', // Assicurati di scaricare Resources.json con lo script update-db
+        items: [
+            { id: 'resources', title: 'Resources', json: 'Resources.json', filter: (i) => !i.type?.includes('Key') },
+            { id: 'gear', title: 'Gear', json: 'Gear.json', filter: () => true },
+            { id: 'fish', title: 'Fish', json: 'Fish.json', filter: () => true }
+        ]
+    },
+    {
+        id: 'cosmetics',
+        title: 'COSMETICS',
+        subtitle: 'FASHION FRAME',
+        color: '#ff9f43',
+        coverItem: 'Repala Syandana', // Esempio
+        jsonFile: 'Skins.json',
+        items: [
+            { id: 'skins', title: 'Skins', json: 'Skins.json', filter: () => true },
+            { id: 'sigils', title: 'Sigils', json: 'Sigils.json', filter: () => true },
+            { id: 'glyphs', title: 'Glyphs', json: 'Glyphs.json', filter: () => true }
+        ]
+    },
+    {
+        id: 'universe',
+        title: 'THE UNIVERSE',
+        subtitle: 'LORE & ENEMIES',
+        color: '#a29bfe',
+        coverItem: 'Natah',
+        jsonFile: 'Enemy.json',
+        items: [
+            { id: 'enemies', title: 'Enemies', json: 'Enemy.json', filter: () => true },
+            { id: 'quests', title: 'Quests', json: 'Quests.json', filter: () => true }
+        ]
+    }
+];
+
+// Helper per trovare configurazioni
+export const getMacroCategory = (id) => HIERARCHY.find(c => c.id === id);
+export const getMicroCategory = (microId) => {
+    for (const macro of HIERARCHY) {
+        const micro = macro.items.find(m => m.id === microId);
+        if (micro) return { ...micro, parentColor: macro.color };
+    }
+    return null;
 };

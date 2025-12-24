@@ -2,46 +2,27 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
+import { HIERARCHY } from '@/utils/categoryConfig'; // Usiamo la nuova config
 import './homepage.css';
 
-// CONFIGURAZIONE CATEGORIE (Amps rimosso)
-const CATEGORIES = [
-    { id: 'warframes', title: 'Warframes', subtitle: 'The Arsenal', color: '#d4af37', link: '/warframes', jsonFile: 'Warframes.json' },
-    { id: 'primary', title: 'Primary', subtitle: 'Rifles & Bows', color: '#ff6b6b', link: '/primary', jsonFile: 'Primary.json' },
-    { id: 'secondary', title: 'Secondary', subtitle: 'Pistols', color: '#ff9f43', link: '/secondary', jsonFile: 'Secondary.json' },
-    { id: 'melee', title: 'Melee', subtitle: 'Blades & Whips', color: '#feca57', link: '/melee', jsonFile: 'Melee.json' },
-    { id: 'mods', title: 'Mods', subtitle: 'Upgrades', color: '#54a0ff', link: '/mods', jsonFile: 'Mods.json' },
-    { id: 'relics', title: 'Relics', subtitle: 'Void Fissures', color: '#00d2d3', link: '/relics', jsonFile: 'Relics.json' },
-    { id: 'companions', title: 'Companions', subtitle: 'Sentinels', color: '#1dd1a1', link: '/companions', jsonFile: 'Sentinels.json' },
-    { id: 'necramechs', title: 'Necramechs', subtitle: 'War Machines', color: '#a29bfe', link: '/necramechs', jsonFile: 'Warframes.json' }
-];
-
-function ApiImageCard({ cat }) {
+function MacroCard({ cat }) {
     const [imgUrl, setImgUrl] = useState(null);
 
     useEffect(() => {
         let isMounted = true;
         async function fetchImage() {
             try {
+                // Fetch del file JSON principale della macro categoria per trovare l'immagine di copertina
                 const res = await fetch(`${API_BASE_URL}/${cat.jsonFile}`);
                 if (!res.ok) return;
                 const data = await res.json();
                 
-                let targetItem;
+                // Cerca l'item di copertina specificato nella config o il primo valido
+                const targetItem = data.find(item => item.name.includes(cat.coverItem)) || 
+                                   data.find(item => item.imageName);
                 
-                // Logica specifica per immagine anteprima
-                if (cat.id === 'relics') {
-                    targetItem = data.find(item => item.imageName && item.name.includes('Intact'));
-                } else if (cat.id === 'necramech') {
-                    targetItem = data.find(item => item.name.toLowerCase() === 'voidrig');
-                } else {
-                    targetItem = data.find(item => item.name.includes("Prime") && item.imageName);
-                }
-                
-                const firstValid = targetItem || data.find(item => item.imageName && !item.imageName.includes("fanart"));
-                
-                if (firstValid && isMounted) {
-                    setImgUrl(`${IMG_BASE_URL}/${firstValid.imageName}`);
+                if (targetItem && isMounted && targetItem.imageName) {
+                    setImgUrl(`${IMG_BASE_URL}/${targetItem.imageName}`);
                 }
             } catch (e) { 
                 console.error(`Img error ${cat.id}`, e);
@@ -49,10 +30,10 @@ function ApiImageCard({ cat }) {
         }
         fetchImage();
         return () => { isMounted = false; };
-    }, [cat.jsonFile, cat.id]);
+    }, [cat]);
 
     return (
-        <Link href={cat.link} style={{textDecoration:'none'}}>
+        <Link href={`/${cat.id}`} style={{textDecoration:'none'}}>
             <div 
                 className="menu-card"
                 style={{ '--card-color': cat.color, '--card-glow': `${cat.color}66` }}
@@ -85,14 +66,14 @@ export default function LandingPage() {
 
                 <div className="cards-scroll-container">
                     <div className="cards-row">
-                        {CATEGORIES.map((cat) => (
-                            <ApiImageCard key={cat.id} cat={cat} />
+                        {HIERARCHY.map((cat) => (
+                            <MacroCard key={cat.id} cat={cat} />
                         ))}
                     </div>
                 </div>
                 
                 <div className="landing-footer">
-                    Operator Interface v2.1 // System Ready
+                    Operator Interface v3.0 // System Ready
                 </div>
             </div>
         </main>

@@ -1,26 +1,6 @@
-DATA DUMP: 2025-12-24T13:03:48.152Z
+DATA DUMP: 2025-12-24T14:41:07.851Z
 
 
-
-==================================================
-FILE: src\app\amps\page.js
-==================================================
-
-import { fetchGameData } from '@/utils/serverData';
-import CodexListPage from '@/components/CodexListPage';
-
-export default async function Page() {
-    // Scarica i dati (assicurati che Amps.json esista in public/database_api, altrimenti sarà vuoto ma non romperà la build)
-    const data = await fetchGameData('Amps.json');
-
-    return (
-        <CodexListPage 
-            initialData={data} 
-            pageTitle="AMPS" 
-            categoryMode="amps" // Passiamo la stringa, non la funzione!
-        />
-    );
-}
 
 ==================================================
 FILE: src\app\companions\page.js
@@ -337,7 +317,7 @@ FILE: src\app\hud-layout.css
 .header-group {
   flex-shrink: 0; 
   background: #0a0a0c; 
-  z-index: 100; /* Z-Index alto per stare sopra */
+  z-index: 40; /* Z-Index alto per stare sopra */
   border-bottom: 1px solid rgba(255,255,255,0.05);
   box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
   display: flex; flex-direction: column;
@@ -1585,7 +1565,7 @@ import { useState, useEffect } from 'react';
 import { API_BASE_URL, IMG_BASE_URL } from '@/utils/constants';
 import './homepage.css';
 
-// CONFIGURAZIONE CATEGORIE
+// CONFIGURAZIONE CATEGORIE (Amps rimosso)
 const CATEGORIES = [
     { id: 'warframes', title: 'Warframes', subtitle: 'The Arsenal', color: '#d4af37', link: '/warframes', jsonFile: 'Warframes.json' },
     { id: 'primary', title: 'Primary', subtitle: 'Rifles & Bows', color: '#ff6b6b', link: '/primary', jsonFile: 'Primary.json' },
@@ -1594,7 +1574,7 @@ const CATEGORIES = [
     { id: 'mods', title: 'Mods', subtitle: 'Upgrades', color: '#54a0ff', link: '/mods', jsonFile: 'Mods.json' },
     { id: 'relics', title: 'Relics', subtitle: 'Void Fissures', color: '#00d2d3', link: '/relics', jsonFile: 'Relics.json' },
     { id: 'companions', title: 'Companions', subtitle: 'Sentinels', color: '#1dd1a1', link: '/companions', jsonFile: 'Sentinels.json' },
-    { id: 'amps', title: 'Amps', subtitle: 'Void Weapons', color: '#a29bfe', link: '/amps', jsonFile: 'Amps.json' }
+    { id: 'necramechs', title: 'Necramechs', subtitle: 'War Machines', color: '#a29bfe', link: '/necramechs', jsonFile: 'Warframes.json' }
 ];
 
 function ApiImageCard({ cat }) {
@@ -1604,14 +1584,17 @@ function ApiImageCard({ cat }) {
         let isMounted = true;
         async function fetchImage() {
             try {
-                // Fetch corretta usando API_BASE_URL aggiornato
                 const res = await fetch(`${API_BASE_URL}/${cat.jsonFile}`);
                 if (!res.ok) return;
                 const data = await res.json();
                 
                 let targetItem;
+                
+                // Logica specifica per immagine anteprima
                 if (cat.id === 'relics') {
                     targetItem = data.find(item => item.imageName && item.name.includes('Intact'));
+                } else if (cat.id === 'necramech') {
+                    targetItem = data.find(item => item.name.toLowerCase() === 'voidrig');
                 } else {
                     targetItem = data.find(item => item.name.includes("Prime") && item.imageName);
                 }
@@ -1619,11 +1602,10 @@ function ApiImageCard({ cat }) {
                 const firstValid = targetItem || data.find(item => item.imageName && !item.imageName.includes("fanart"));
                 
                 if (firstValid && isMounted) {
-                    // Immagine corretta usando IMG_BASE_URL aggiornato
                     setImgUrl(`${IMG_BASE_URL}/${firstValid.imageName}`);
                 }
             } catch (e) { 
-                console.error(`Img error ${cat.id}`, e); 
+                console.error(`Img error ${cat.id}`, e);
             }
         }
         fetchImage();
@@ -1671,7 +1653,7 @@ export default function LandingPage() {
                 </div>
                 
                 <div className="landing-footer">
-                    Operator Interface v2.0 // System Ready
+                    Operator Interface v2.1 // System Ready
                 </div>
             </div>
         </main>
@@ -3655,13 +3637,8 @@ FILE: src\utils\clientCategories.js
 const isNecramech = (item) => {
     const type = (item.type || "").toLowerCase();
     const name = item.name.toLowerCase();
-    
-    // Controlla se il tipo contiene "necramech"
     if (type.includes('necramech')) return true;
-    
-    // Controlla i nomi specifici (perché Bonewidow e Voidrig a volte hanno tipo generico)
     if (name === 'bonewidow' || name === 'voidrig') return true;
-    
     return false;
 };
 
@@ -3671,30 +3648,21 @@ export const CATEGORY_CONFIGS = {
             id: 'all', label: 'ALL',
             filter: (item) => {
                 const type = (item.type || "").toLowerCase();
-                // Deve essere Warframe E NON Necramech
-                return type.includes('warframe') && 
-                       item.category === 'Warframes' &&
-                       !isNecramech(item);
+                return type.includes('warframe') && item.category === 'Warframes' && !isNecramech(item);
             }
         },
         {
             id: 'base', label: 'BASE',
             filter: (item) => {
                 const type = (item.type || "").toLowerCase();
-                return type.includes('warframe') && 
-                       item.category === 'Warframes' && 
-                       !item.name.includes('Prime') &&
-                       !isNecramech(item);
+                return type.includes('warframe') && item.category === 'Warframes' && !item.name.includes('Prime') && !isNecramech(item);
             }
         },
         {
             id: 'prime', label: 'PRIME',
             filter: (item) => {
                 const type = (item.type || "").toLowerCase();
-                return type.includes('warframe') && 
-                       item.category === 'Warframes' && 
-                       item.name.includes('Prime') &&
-                       !isNecramech(item);
+                return type.includes('warframe') && item.category === 'Warframes' && item.name.includes('Prime') && !isNecramech(item);
             }
         }
     ],
@@ -3762,13 +3730,6 @@ export const CATEGORY_CONFIGS = {
     ],
     'necramechs': [
          { id: 'all', label: 'NECRAMECHS', filter: (item) => isNecramech(item) }
-    ],
-    'amps': [
-        {
-            id: 'all',
-            label: 'ALL',
-            filter: (item) => item.category === 'Amps' || (item.type && item.type.includes('Amp'))
-        }
     ]
 };
 
