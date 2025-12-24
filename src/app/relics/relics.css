@@ -1,0 +1,165 @@
+/* src/app/relics/relics.css */
+
+/* GRIGLIA */
+.relics-grid-container {
+    padding-bottom: 100px;
+    width: 100%;
+}
+
+/* CARD RELIQUIA - DESIGN AVANZATO */
+.relic-card-advanced {
+    width: 100%;
+    height: 260px;
+    background: linear-gradient(145deg, #1a1a1d 0%, #0a0a0c 100%);
+    border: 1px solid #333;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Hover Effect */
+.relic-card-advanced:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+    border-color: var(--era-color);
+}
+.relic-card-advanced:hover .relic-glow-bg {
+    opacity: 0.2;
+}
+
+/* Colori per Era (Vars dinamiche impostate inline) */
+.relic-card-advanced[data-era="Lith"] { --era-color: #a89686; }
+.relic-card-advanced[data-era="Meso"] { --era-color: #c0c0c0; }
+.relic-card-advanced[data-era="Neo"] { --era-color: #d4af37; }
+.relic-card-advanced[data-era="Axi"] { --era-color: #b0c9ec; }
+.relic-card-advanced[data-era="Requiem"] { --era-color: #ff4444; }
+
+/* Indicatore Era (Barra superiore) */
+.relic-era-bar {
+    height: 4px;
+    width: 100%;
+    background: var(--era-color);
+    box-shadow: 0 0 10px var(--era-color);
+}
+
+/* Sfondo Glow (Effetto luce) */
+.relic-glow-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--era-color) 0%, transparent 70%);
+    opacity: 0.05;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+/* Checkbox Posseduto */
+.relic-check {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 24px; height: 24px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: transparent;
+    z-index: 10;
+    transition: 0.2s;
+    background: rgba(0,0,0,0.6);
+}
+.relic-card-advanced:hover .relic-check { border-color: #fff; }
+.relic-card-advanced.owned .relic-check {
+    background: var(--era-color);
+    border-color: var(--era-color);
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 10px var(--era-color);
+}
+
+/* Immagine */
+.relic-img-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 20px;
+}
+.relic-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+    transition: transform 0.3s;
+}
+.relic-card-advanced:hover .relic-img { transform: scale(1.1); }
+
+/* Info Area */
+.relic-info {
+    padding: 15px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 5;
+}
+
+.relic-era-name {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--era-color);
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+.relic-code {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.relic-status {
+    margin-top: 5px;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* STILE VAULTED */
+.relic-card-advanced.is-vaulted {
+    border-color: #331111;
+    background: linear-gradient(145deg, #100505 0%, #050202 100%);
+}
+.relic-card-advanced.is-vaulted .relic-img {
+    filter: grayscale(100%) brightness(0.6);
+}
+.relic-card-advanced.is-vaulted .relic-era-bar {
+    background: #552222;
+    box-shadow: none;
+}
+.relic-card-advanced.is-vaulted .relic-code {
+    color: #884444;
+}
+.relic-card-advanced.is-vaulted .relic-status {
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+/* STILE AVAILABLE */
+.relic-card-advanced:not(.is-vaulted) .relic-status {
+    color: #5fffa5;
+    /* border: 1px solid #5fffa5; Opzionale: meno rumore visivo senza bordo */
+    opacity: 0.7;
+}

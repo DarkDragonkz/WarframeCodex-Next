@@ -4,8 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
-import RelicDetailModal from '@/components/RelicDetailModal'; // Importiamo il NUOVO modale
+import RelicDetailModal from '@/components/RelicDetailModal'; 
 import '@/app/hud-layout.css'; 
+import './relics.css'; // IMPORTA IL NUOVO CSS
 
 const STORAGE_KEY = 'warframe_codex_relics_v1';
 
@@ -14,41 +15,36 @@ export default function RelicsClientPage({ initialData = [] }) {
     const [ownedCards, setOwnedCards] = useState(new Set());
     const [loading, setLoading] = useState(true);
 
-    // Filtri
-    const [currentEra, setCurrentEra] = useState('all'); // all, Lith, Meso, Neo, Axi, Requiem
+    const [currentEra, setCurrentEra] = useState('all'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showMissingOnly, setShowMissingOnly] = useState(false);
     const [hideVaulted, setHideVaulted] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
-    // Debounce
     useEffect(() => {
         const timer = setTimeout(() => { setDebouncedSearch(searchTerm); }, 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    // Inizializzazione
     useEffect(() => {
         if(initialData && initialData.length > 0) {
-            // Filtriamo solo le reliquie "Intact" per evitare duplicati (Radiant/Exceptional)
             const processed = initialData.filter(item => 
                 item.name.includes('Intact') && 
                 item.category === 'Relics'
             ).map(item => ({
                 ...item,
-                // Calcoliamo subito se è vaulted per velocizzare i filtri
+                // Logica Vaulted
                 isVaulted: !item.drops || item.drops.length === 0,
-                // Nome pulito per ricerca (rimuovi "Intact" e "Relic")
+                // Nome pulito: "Lith G1 Relic (Intact)" -> "G1" e Era "Lith"
+                era: item.name.split(' ')[0],
+                code: item.name.replace(' Relic (Intact)', '').split(' ')[1] || '??',
                 simpleName: item.name.replace(' Intact', '').replace(' Relic', '').trim()
             }));
 
-            // Ordina per Era e poi per Nome
             const eraOrder = { 'Lith': 1, 'Meso': 2, 'Neo': 3, 'Axi': 4, 'Requiem': 5 };
             processed.sort((a, b) => {
-                const eraA = a.name.split(' ')[0];
-                const eraB = b.name.split(' ')[0];
-                if (eraOrder[eraA] !== eraOrder[eraB]) return (eraOrder[eraA] || 9) - (eraOrder[eraB] || 9);
+                if (eraOrder[a.era] !== eraOrder[b.era]) return (eraOrder[a.era] || 9) - (eraOrder[b.era] || 9);
                 return a.name.localeCompare(b.name);
             });
 
@@ -62,7 +58,6 @@ export default function RelicsClientPage({ initialData = [] }) {
         }
     }, [initialData]);
 
-    // Salvataggio
     useEffect(() => {
         if (!loading && typeof window !== 'undefined') {
             const handler = setTimeout(() => {
@@ -77,10 +72,7 @@ export default function RelicsClientPage({ initialData = [] }) {
             if (debouncedSearch && !item.simpleName.toLowerCase().includes(debouncedSearch)) return false;
             if (showMissingOnly && ownedCards.has(item.uniqueName)) return false;
             if (hideVaulted && item.isVaulted) return false;
-
-            if (currentEra !== 'all') {
-                if (!item.name.startsWith(currentEra)) return false;
-            }
+            if (currentEra !== 'all' && item.era !== currentEra) return false;
             return true;
         });
     }, [rawApiData, currentEra, debouncedSearch, showMissingOnly, hideVaulted, ownedCards]);
@@ -133,7 +125,7 @@ export default function RelicsClientPage({ initialData = [] }) {
                     <div className="filters-right">
                         <div className="search-wrapper">
                             <input 
-                                type="text" className="search-input" placeholder="SEARCH RELIC..." 
+                                type="text" className="search-input" placeholder="SEARCH (Ex: G1)..." 
                                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} 
                             />
                         </div>
@@ -158,13 +150,13 @@ export default function RelicsClientPage({ initialData = [] }) {
                     totalCount={filteredData.length}
                     overscan={200}
                     components={{
-                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'flex', flexWrap: 'wrap', justifyContent:'center', gap:'20px', paddingBottom:'100px'}} />,
+                        List: (props) => <div {...props} className="card-gallery" style={{...props.style, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px', paddingBottom:'100px'}} />,
                         Item: (props) => <div {...props} style={{...props.style, margin: 0}} />
                     }}
                     itemContent={(index) => {
                         const item = filteredData[index];
                         return (
-                            <div onClick={() => setSelectedItem(item)} style={{cursor:'pointer'}}>
+                            <div onClick={() => setSelectedItem(item)} style={{height: '100%'}}>
                                 <RelicCard 
                                     item={item} 
                                     isOwned={ownedCards.has(item.uniqueName)} 
@@ -188,42 +180,35 @@ export default function RelicsClientPage({ initialData = [] }) {
     );
 }
 
-// Card Semplificata per le Reliquie (interna al file per comodità)
+// Nuova Card con Design Migliorato
 function RelicCard({ item, isOwned, onToggle }) {
-    const eraColor = {
-        'Lith': '#a89686', // Bronze-ish
-        'Meso': '#c0c0c0', // Silver-ish
-        'Neo': '#d4af37', // Gold
-        'Axi': '#b0c9ec', // Platinum/Diamond
-        'Requiem': '#ff4444' // Red
-    };
-    const era = item.name.split(' ')[0];
-    const borderColor = eraColor[era] || '#444';
-
     return (
-        <div className={`card-wrapper ${isOwned ? 'owned' : ''}`} style={{height:'280px', width:'180px', borderTop:`3px solid ${borderColor}`}}>
-            <div className="card-image-container" style={{height:'140px', background: 'radial-gradient(circle, #222 0%, #111 100%)'}}>
-                <div className="owned-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
-                    {isOwned ? '✔' : ''}
-                </div>
-                
-                {item.isVaulted && <div className="vaulted-tag-card">VAULTED</div>}
+        <div 
+            className={`relic-card-advanced ${item.isVaulted ? 'is-vaulted' : ''} ${isOwned ? 'owned' : ''}`}
+            data-era={item.era}
+        >
+            <div className="relic-era-bar"></div>
+            <div className="relic-glow-bg"></div>
+            
+            <div className="relic-check" onClick={(e) => { e.stopPropagation(); onToggle(); }}>
+                {isOwned ? '✓' : ''}
+            </div>
 
+            <div className="relic-img-wrapper">
                 <Image 
                     src={`${IMG_BASE_URL}/${item.imageName}`} 
                     alt={item.name} 
                     fill
-                    className="card-image-img"
-                    style={{objectFit: 'contain', transform:'scale(0.8)'}}
+                    className="relic-img"
                     unoptimized
                 />
             </div>
 
-            <div className="info-area" style={{justifyContent:'flex-start', padding:'15px 10px'}}>
-                <div className="type-pill" style={{color: borderColor, borderColor: borderColor}}>{era} ERA</div>
-                <div className="mod-name" style={{fontSize:'16px'}}>{item.simpleName.split(' ')[1]}</div>
-                <div style={{fontSize:'10px', color:'#666', marginTop:'5px'}}>
-                    {item.isVaulted ? "Archived Relic" : "Available in Mission"}
+            <div className="relic-info">
+                <div className="relic-era-name">{item.era}</div>
+                <div className="relic-code">{item.code}</div>
+                <div className="relic-status">
+                    {item.isVaulted ? "VAULTED" : "AVAILABLE"}
                 </div>
             </div>
         </div>
