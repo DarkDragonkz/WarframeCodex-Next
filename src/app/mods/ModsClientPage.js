@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { IMG_BASE_URL } from '@/utils/constants';
+// Assicurati di aver creato questo file come indicato nel PASSO 1
+import { getBasePath } from '@/utils/basePath'; 
 import '@/app/hud-layout.css'; 
 import './mods.css';
 
@@ -242,25 +244,27 @@ function ModCard({ item, isOwned, onToggle }) {
 
     const wikiUrl = `https://warframe.fandom.com/wiki/${item.name.replace(/ /g, '_')}`;
     
-    // --- MAPPA POLARITÀ MIGLIORATA ---
+    // --- MAPPA POLARITÀ CORRETTA ---
     const getPolarityIcon = () => {
         if (!item.polarity) return null;
         const p = item.polarity.toLowerCase().trim();
         
-        // Mappa i nomi che arrivano dall'API ai nomi dei file che hai tu
+        // Mappa i nomi. NOTA: Assicurati che le estensioni siano corrette (SVG vs PNG)
         const map = {
             'madurai': 'madurai.svg',
             'naramon': 'naramon.svg',
             'vazarin': 'vazarin.svg',
             'zenurik': 'zenurik.svg',
             'unairu': 'unairu.svg',
-            'penjaga': 'penjaga.svg', // Assicurati di avere questo file! Altrimenti usa 'Precept.svg' se lo hai rinominato
-            'universal': 'any.svg',   // Questo è quello per "universal"
+            'penjaga': 'penjaga.svg',
+            'universal': 'any.svg',
             'umbra': 'umbra.svg'
         };
 
-        const fileName = map[p] || (p.charAt(0).toUpperCase() + p.slice(1) + '.svg'); // Fallback: Capitalize
-        return `/polarities/${fileName}`;
+        const fileName = map[p] || (p.charAt(0).toUpperCase() + p.slice(1) + '.svg');
+        
+        // MODIFICA CRITICA: Usa getBasePath per risolvere l'URL su GitHub Pages
+        return getBasePath(`polarities/${fileName}`);
     };
 
     const polIconUrl = getPolarityIcon();
@@ -309,13 +313,21 @@ function ModCard({ item, isOwned, onToggle }) {
                         <Image src={`${IMG_BASE_URL}/${item.imageName}`} alt={item.name} fill className="mod-img" unoptimized />
                     </div>
                     <div className="mod-top-bar">
-                        {/* BADGE "OWNED / MISSING" */}
                         <div className={`mod-status-btn ${isOwned ? 'owned' : ''}`} onClick={(e) => { e.stopPropagation(); onToggle(); }}>
                             {isOwned ? 'OWNED' : 'MISSING'}
                         </div>
                         <div className="mod-drain-box">
                             <span>{currentDrain}</span>
-                            {polIconUrl && <img src={polIconUrl} alt={item.polarity} className="mod-polarity-icon" onError={(e) => e.target.style.display='none'} />}
+                            {polIconUrl && (
+                                <img 
+                                    src={polIconUrl} 
+                                    alt={item.polarity} 
+                                    className="mod-polarity-icon" 
+                                    // MODIFICA CRITICA: Invert(1) rende bianche le icone nere
+                                    style={{ filter: 'invert(1)', width: '16px', height: '16px' }}
+                                    onError={(e) => e.target.style.display='none'} 
+                                />
+                            )}
                         </div>
                     </div>
                     <div className="mod-info-front">
