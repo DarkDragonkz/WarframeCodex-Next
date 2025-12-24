@@ -264,7 +264,7 @@ function ModCard({ item, isOwned, onToggle }) {
         const fileName = map[p] || (p.charAt(0).toUpperCase() + p.slice(1) + '.svg');
         
         // MODIFICA CRITICA: Usa getBasePath per risolvere l'URL su GitHub Pages
-        return getBasePath(`polarities/${fileName}`);
+        return getBasePath(`public/polarities/${fileName}`);
     };
 
     const polIconUrl = getPolarityIcon();
