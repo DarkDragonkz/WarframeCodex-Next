@@ -1,14 +1,11 @@
 import { fetchGameData } from '@/utils/serverData';
-import CodexListPage from '@/components/CodexListPage';
+import RelicsClientPage from './RelicsClientPage';
 
 export default async function Page() {
+    // Carichiamo i dati lato server
     const data = await fetchGameData('Relics.json');
 
     return (
-        <CodexListPage 
-            initialData={data} 
-            pageTitle="VOID RELICS" 
-            categoryMode="relics"
-        />
+        <RelicsClientPage initialData={data} />
     );
 }

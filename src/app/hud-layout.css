@@ -238,3 +238,8 @@
     height: 140px;
   }
 }
+/* Specifico per Reliquie se serve */
+.relic-card-wrapper {
+    height: 280px;
+    width: 180px;
+}
