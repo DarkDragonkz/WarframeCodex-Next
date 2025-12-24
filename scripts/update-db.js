@@ -6,7 +6,7 @@ const https = require('https');
 const BASE_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json";
 
 const categories = [
-    'Warframes', 'Primary', 'Secondary', 'Melee', 'Archwing', 
+    'Warframes','All', 'Primary', 'Secondary', 'Melee', 'Archwing', 
     'Arch-Gun', 'Arch-Melee', 'Sentinels', 'Pets', 'Mods', 
     'Relics', 'Skins', 'Gear', 'Resources', 'Fish', 
     'Glyphs', 'Sigils', 'Enemy', 'Misc', 'Quest'
