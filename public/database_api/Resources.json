@@ -76,11 +76,7 @@
     "parents": [
       "Bonewidow Engine",
       "Cortege Barrel",
-      "Feverspine",
       "Morgha Barrel",
-      "Palmaris",
-      "Raiju Core",
-      "Sporelacer",
       "Voidrig Casing"
     ],
     "patchlogs": [
@@ -114,8 +110,7 @@
     "masterable": false,
     "name": "Adramalium",
     "parents": [
-      "Adramal Alloy",
-      "Xaku Kintsu Helmet"
+      "Adramal Alloy"
     ],
     "patchlogs": [
       {
@@ -263,13 +258,8 @@
       }
     ],
     "imageName": "aggristone-c5fa9bc458.png",
-    "itemCount": 150,
     "masterable": false,
     "name": "Aggristone",
-    "parents": [
-      "Argo & Vel",
-      "Sampotes"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriRockItem"
@@ -770,15 +760,8 @@
       }
     ],
     "imageName": "atmo-systems-4cd4a394e5.png",
-    "itemCount": 2,
     "masterable": false,
     "name": "Atmo Systems",
-    "parents": [
-      "Dissic Scaffold",
-      "Exard Scaffold",
-      "Galvacord",
-      "Propa Scaffold"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -1011,28 +994,11 @@
     "consumeOnBuild": false,
     "description": "A compound formed from Axidite.\n\nBlueprint sold by Smokefinger in Fortuna on Venus.",
     "imageName": "axidrol-alloy-1c1aae73ee.png",
-    "itemCount": 30,
+    "itemCount": 45,
     "masterable": false,
     "name": "Axidrol Alloy",
     "parents": [
-      "Alcrom Core",
-      "Bad Baby",
-      "Bellows",
-      "Brash",
-      "Drex Core",
-      "Drimper Bracket",
-      "Fatboys",
-      "Garmr Core",
-      "Gibber",
-      "Jonsin Bracket",
-      "Krisys Core",
-      "Oxylus",
-      "Para Moa",
-      "Ramble",
-      "Tombfinger",
-      "Tremor",
-      "Zip",
-      "Zubb Bracket"
+      "Oxylus"
     ],
     "skipBuildTimePrice": 5,
     "tradable": false,
@@ -1291,12 +1257,8 @@
     "consumeOnBuild": true,
     "description": "Capsule component for the Bonewidow Necramech.",
     "imageName": "bonewidow-capsule.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Bonewidow Capsule",
-    "parents": [
-      "Bonewidow"
-    ],
     "skipBuildTimePrice": 25,
     "tradable": false,
     "type": "Resource",
@@ -1369,12 +1331,8 @@
     "consumeOnBuild": true,
     "description": "Casing component for the Bonewidow Necramech.",
     "imageName": "bonewidow-casing.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Bonewidow Casing",
-    "parents": [
-      "Bonewidow"
-    ],
     "skipBuildTimePrice": 25,
     "tradable": false,
     "type": "Resource",
@@ -1447,12 +1405,8 @@
     "consumeOnBuild": true,
     "description": "Engine component for the Bonewidow Necramech.",
     "imageName": "bonewidow-engine.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Bonewidow Engine",
-    "parents": [
-      "Bonewidow"
-    ],
     "skipBuildTimePrice": 25,
     "tradable": false,
     "type": "Resource",
@@ -1525,12 +1479,8 @@
     "consumeOnBuild": true,
     "description": "Weapon Pod component for the Bonewidow Necramech.",
     "imageName": "bonewidow-weapon-pod.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Bonewidow Weapon Pod",
-    "parents": [
-      "Bonewidow"
-    ],
     "skipBuildTimePrice": 25,
     "tradable": false,
     "type": "Resource",
@@ -1642,25 +1592,8 @@
       }
     ],
     "imageName": "calda-toroid-652e0532d3.png",
-    "itemCount": 3,
     "masterable": false,
     "name": "Calda Toroid",
-    "parents": [
-      "Dissic Scaffold",
-      "Exard Scaffold",
-      "Haztech Apparel",
-      "Haztech Cuirass",
-      "Kubrodon Ventkid Apparel",
-      "Kubrodon Ventkid Cuirass",
-      "Outrider Cuirass",
-      "Propa Scaffold",
-      "Smelter Apparel",
-      "Smelter Cuirass",
-      "Urga Bracket",
-      "Vent Pobber Ventkid Apparel",
-      "Vent Pobber Ventkid Cuirass",
-      "Vent Rat Cuirass"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -1751,13 +1684,8 @@
     "consumeOnBuild": false,
     "description": "Resilient components used to reinforce the plated sheets of metal strapped to Grineer Ships.\n\nLocation: Eximus units in the Grineer Shipyard Tileset, and Railjack missions in Earth, Saturn, and Veil Proximas",
     "imageName": "carbides-7a527a7e84.png",
-    "itemCount": 800,
     "masterable": false,
     "name": "Carbides",
-    "parents": [
-      "Basmu",
-      "Protea Telema Helmet"
-    ],
     "patchlogs": [
       {
         "name": "Update 29.10.0: Corpus Proxima & The New Railjack",
@@ -2115,28 +2043,8 @@
       }
     ],
     "imageName": "cetus-wisp-0681ca5991.png",
-    "itemCount": 5,
     "masterable": false,
     "name": "Cetus Wisp",
-    "parents": [
-      "Clapkra Brace",
-      "Ekwana Jai Ii",
-      "Ekwana Ruhang Ii",
-      "Juttni Brace",
-      "Klebrik Scaffold",
-      "Kwath",
-      "Lohrin Brace",
-      "Mewan",
-      "Pencha Scaffold",
-      "Shraksun Scaffold",
-      "Vargeet Jai Ii",
-      "Vargeet Ruhang Ii",
-      "Zauba Apparel",
-      "Zauba Cuirass",
-      "Zauba Greaves",
-      "Zauba Mask",
-      "Zauba Pauldrons"
-    ],
     "patchlogs": [
       {
         "name": "Update 30.9.0: Prime Resurgence",
@@ -2311,21 +2219,8 @@
       }
     ],
     "imageName": "condroc-wing-eb7ec93710.png",
-    "itemCount": 15,
     "masterable": false,
     "name": "Condroc Wing",
-    "parents": [
-      "Ekwana Ii Jai",
-      "Ekwana Ii Ruhang",
-      "Ekwana Jai",
-      "Ekwana Jai Ii",
-      "Ekwana Ruhang",
-      "Ekwana Ruhang Ii",
-      "Jai",
-      "Jai Ii",
-      "Naberus Ephemera",
-      "Sepfahn"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Eidolon/Resources/BirdOfPreyPartItem"
@@ -2378,12 +2273,8 @@
       }
     ],
     "imageName": "connla-sprout-e3510eda7b.png",
-    "itemCount": 40,
     "masterable": false,
     "name": "Connla Sprout",
-    "parents": [
-      "Edun"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemC"
@@ -2602,12 +2493,8 @@
     "consumeOnBuild": true,
     "description": "A Necramech weapon-crafting component.",
     "imageName": "cortege-barrel.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Cortege Barrel",
-    "parents": [
-      "Cortege"
-    ],
     "skipBuildTimePrice": 5,
     "tradable": false,
     "type": "Resource",
@@ -2680,12 +2567,8 @@
     "consumeOnBuild": true,
     "description": "A Necramech weapon-crafting component.",
     "imageName": "cortege-receiver.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Cortege Receiver",
-    "parents": [
-      "Cortege"
-    ],
     "patchlogs": [
       {
         "name": "Heart of Deimos: Hotfix 29.0.4",
@@ -2769,12 +2652,8 @@
     "consumeOnBuild": true,
     "description": "A Necramech weapon-crafting component.",
     "imageName": "cortege-stock.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Cortege Stock",
-    "parents": [
-      "Cortege"
-    ],
     "skipBuildTimePrice": 5,
     "tradable": false,
     "type": "Resource",
@@ -2881,12 +2760,8 @@
     "category": "Resources",
     "description": "A device of undetermined function and origin. Prized by Vox Solaris and the Quills.\n\nEarn Crisma Toroids by defeating the Profit-Taker Orb on the Orb Vallis (Venus).",
     "imageName": "crisma-toroid-8fe557490c.png",
-    "itemCount": 2,
     "masterable": false,
     "name": "Crisma Toroid",
-    "parents": [
-      "Larkspur"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -3110,15 +2985,8 @@
       }
     ],
     "imageName": "damaged-necramech-pod.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Damaged Necramech Pod",
-    "parents": [
-      "Loid Sentinel Mask",
-      "Loid Sentinel Skin",
-      "Loid Sentinel Tail",
-      "Loid Sentinel Wing"
-    ],
     "tradable": true,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/Mechs/DamagedMechPartSystemsItem"
@@ -3474,28 +3342,8 @@
     "consumeOnBuild": true,
     "description": "Detonite injectors are the basis for explosive and incendiary weapons.\n\nLocation: Clan Research (Chem Lab in the Dojo) and Grineer Invasion Rewards",
     "imageName": "detonite-injector-64a926ce31.png",
-    "itemCount": 2,
     "masterable": false,
     "name": "Detonite Injector",
-    "parents": [
-      "<Archwing> Knux",
-      "Ack & Brunt",
-      "Argonak",
-      "Buzlok",
-      "Grinlok",
-      "Ignis",
-      "Ignis Wraith",
-      "Jat Kittag",
-      "Jat Kusar",
-      "Javlok",
-      "Kesheg",
-      "Kohmak",
-      "Marelok",
-      "Nukor",
-      "Ogris",
-      "Sydon",
-      "Twin Krohkur"
-    ],
     "patchlogs": [
       {
         "name": "Update: Specters of the Rail",
@@ -3676,10 +3524,7 @@
     "parents": [
       "Bonewidow Weapon Pod",
       "Cortege Receiver",
-      "Garmr Core",
       "Morgha Receiver",
-      "Pulmonars",
-      "Quassus",
       "Voidrig Capsule"
     ],
     "patchlogs": [
@@ -3749,12 +3594,8 @@
       }
     ],
     "imageName": "dracroot-f10a963d7e.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Dracroot",
-    "parents": [
-      "Syam"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemF"
@@ -3785,14 +3626,8 @@
       }
     ],
     "imageName": "echo-voca-32f69b9f58.png",
-    "itemCount": 2,
     "masterable": false,
     "name": "Echo Voca",
-    "parents": [
-      "Grimoire",
-      "Mandonel",
-      "Qorvex"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabDogTagRare"
@@ -3845,12 +3680,8 @@
       }
     ],
     "imageName": "eevani-af4da5cb77.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Eevani",
-    "parents": [
-      "Syam"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemB"
@@ -3873,12 +3704,8 @@
       }
     ],
     "imageName": "efervon-sample-fcaab6b303.png",
-    "itemCount": 60,
     "masterable": false,
     "name": "Efervon Sample",
-    "parents": [
-      "Ax-52"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/1999Wf/Resources/1999ResourceCommonA"
@@ -4112,19 +3939,8 @@
       }
     ],
     "imageName": "entrati-lanthorn-3ee4c5dafc.png",
-    "itemCount": 10,
     "masterable": false,
     "name": "Entrati Lanthorn",
-    "parents": [
-      "Alternox",
-      "Ekhein",
-      "Grimoire",
-      "Innodem",
-      "Onos",
-      "Phenmor",
-      "Raptwing Ephemera",
-      "Seraphayre Ephemera"
-    ],
     "patchlogs": [
       {
         "name": "Update 31.5: Angels of the Zariman",
@@ -4181,14 +3997,8 @@
       }
     ],
     "imageName": "entrati-obols-bd6f30a279.png",
-    "itemCount": 2000,
     "masterable": false,
     "name": "Entrati Obols",
-    "parents": [
-      "Ekhein",
-      "Grimoire",
-      "Thalys"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemA"
@@ -4244,21 +4054,11 @@
     "consumeOnBuild": false,
     "description": "Polished and cut to perfection.\n\nBlueprint sold by Old Man Suumbaat in Cetus on Earth.",
     "imageName": "esher-devar-7ea467cba3.png",
-    "itemCount": 10,
+    "itemCount": 1,
     "masterable": false,
     "name": "Esher Devar",
     "parents": [
-      "Cryotra",
-      "Focused Nosam Cutter",
-      "Korrudo",
-      "Kronsh",
-      "Plague Keewar",
-      "Rabvee",
-      "Rahn Prism",
-      "Raplak Prism",
-      "Shwaak Prism",
-      "Swiftfire",
-      "Tazicor"
+      "Focused Nosam Cutter"
     ],
     "patchlogs": [
       {
@@ -4325,12 +4125,8 @@
     "consumeOnBuild": false,
     "description": "A coveted sample of Sentient internal anatomy. Specimens of this age and quality are both rare and valuable. \n\nLocation: Eidolons found roaming the Plains of Eidolon on Earth at night",
     "imageName": "exceptional-sentient-core-ac214d9a92.png",
-    "itemCount": 5,
     "masterable": false,
     "name": "Exceptional Sentient Core",
-    "parents": [
-      "Venato"
-    ],
     "patchlogs": [
       {
         "name": "Update 30.9.0: Prime Resurgence",
@@ -4715,37 +4511,12 @@
     "consumeOnBuild": true,
     "description": "ClanTech weaponized containment field to contain superheated substances.\n\nLocation: Clan Research (Energy Lab in the Dojo) and Corpus Invasion Rewards",
     "imageName": "fieldron-db068da41e.png",
-    "itemCount": 7,
+    "itemCount": 10,
     "masterable": false,
     "name": "Fieldron",
     "parents": [
-      "Amprex",
       "Antiserum Injector",
-      "Arca Plasmor",
-      "Arca Scisco",
-      "Battacor",
-      "Convectrix",
-      "Cyanex",
-      "Cycron",
-      "Dera",
-      "Dual Cestra",
-      "Falcor",
-      "Ferrox",
-      "Flux Rifle",
-      "Glaxion",
-      "Helios",
-      "Komorex",
-      "Kreska",
-      "Lanka",
-      "Lenz",
-      "Ocucor",
-      "Opticor",
-      "Prova",
-      "Quanta",
-      "Serro",
-      "Spectra",
-      "Staticor",
-      "Supra"
+      "Helios"
     ],
     "patchlogs": [
       {
@@ -5077,24 +4848,8 @@
       }
     ],
     "imageName": "ganglion-d872a787d7.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Ganglion",
-    "parents": [
-      "Arcroid",
-      "Desus Antigen",
-      "Elasmun Antigen",
-      "Feverspine",
-      "Ibexan Antigen",
-      "Iranon Antigen",
-      "Macro Arcroid",
-      "Nodulite",
-      "Plagen Antigen",
-      "Poxi Antigen",
-      "Tethron Antigen",
-      "Vermisplicer",
-      "Virox Antigen"
-    ],
     "patchlogs": [
       {
         "name": "Heart of Deimos: Update 29",
@@ -5216,22 +4971,8 @@
       }
     ],
     "imageName": "gorgaricus-spore-32dbb7ad0d.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Gorgaricus Spore",
-    "parents": [
-      "Beaky",
-      "Dink-A-Donk",
-      "Hextra Gyro",
-      "Lambeo Moa",
-      "Nychus Moa",
-      "Phazor Gyro",
-      "Puppeteer",
-      "Rattleguts",
-      "Slap",
-      "Two-Sloops",
-      "Wingnut"
-    ],
     "patchlogs": [
       {
         "name": "Empyrean: Prime Vault 27.1.1",
@@ -5461,24 +5202,14 @@
       }
     ],
     "imageName": "grokdrul-1753a06746.png",
-    "itemCount": 40,
+    "itemCount": 55,
     "masterable": false,
     "name": "Grokdrul",
     "parents": [
       "Fosfor Blau",
-      "Kronsh",
       "Lanzo Fishing Spear",
-      "Pencha Scaffold",
       "Peram Fishing Spear",
-      "Phahd Scaffold",
-      "Plague Bokwin",
-      "Quartakk",
-      "Rabvee",
-      "Seekalla",
       "Shockprod Fishing Spear",
-      "Shraksun Scaffold",
-      "Shtung",
-      "Stubba",
       "Stunna Fishing Spear",
       "Tulok Fishing Spear"
     ],
@@ -5590,15 +5321,8 @@
       }
     ],
     "imageName": "gyromag-systems-ea3fd3f500.png",
-    "itemCount": 3,
     "masterable": false,
     "name": "Gyromag Systems",
-    "parents": [
-      "Cantic Prism",
-      "Klamora Prism",
-      "Lega Prism",
-      "Plinx"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -5663,14 +5387,7 @@
     "masterable": false,
     "name": "Heart Nyth",
     "parents": [
-      "Caliban Cranion Helmet",
-      "Exceptional Sentient Core",
-      "Phahd Scaffold",
-      "Vahd Apparel",
-      "Vahd Cuirass",
-      "Vahd Greaves",
-      "Vahd Mask",
-      "Vahd Pauldrons"
+      "Exceptional Sentient Core"
     ],
     "patchlogs": [
       {
@@ -5779,36 +5496,8 @@
     "consumeOnBuild": false,
     "description": "A compound formed from Hesperon.\n\nBlueprint sold by Smokefinger in Fortuna on Venus.",
     "imageName": "hespazym-alloy-ebcdeeba7a.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Hespazym Alloy",
-    "parents": [
-      "Dissic Scaffold",
-      "Exard Scaffold",
-      "Frak Stabilizer",
-      "Haztech Greaves",
-      "Haztech Mask",
-      "Highbrow",
-      "Hothead",
-      "Kubrodon Ventkid Greaves",
-      "Kubrodon Ventkid Mask",
-      "Lehan Core",
-      "Needlenose",
-      "Outrider Greaves",
-      "Outrider Mask",
-      "Propa Scaffold",
-      "Runway",
-      "Smelter Greaves",
-      "Smelter Mask",
-      "Stitch",
-      "Styanax Gerousic Helmet",
-      "Tatsu",
-      "Thunderdrum",
-      "Vent Pobber Ventkid Greaves",
-      "Vent Pobber Ventkid Mask",
-      "Vent Rat Greaves",
-      "Vent Rat Mask"
-    ],
     "patchlogs": [
       {
         "name": "Update 30.9.0: Prime Resurgence",
@@ -5882,12 +5571,8 @@
       }
     ],
     "imageName": "höllvanian-pitchweave-fragment-4ba496b3bd.png",
-    "itemCount": 60,
     "masterable": false,
     "name": "HöLlvanian Pitchweave Fragment",
-    "parents": [
-      "Ax-52"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/1999Wf/Resources/1999ResourceCommonB"
@@ -5998,13 +5683,8 @@
       }
     ],
     "imageName": "intact-sentient-core-a57cc563b9.png",
-    "itemCount": 10,
     "masterable": false,
     "name": "Intact Sentient Core",
-    "parents": [
-      "Phantasma",
-      "Verdilac"
-    ],
     "patchlogs": [
       {
         "name": "Echoes of Veilbreaker: Hotfix 32.1.2",
@@ -6127,22 +5807,13 @@
       }
     ],
     "imageName": "iradite-78612a184b.png",
-    "itemCount": 50,
+    "itemCount": 5,
     "masterable": false,
     "name": "Iradite",
     "parents": [
-      "Cela Bracket",
       "Fosfor Rahd",
-      "Korb",
       "Luminous Dye",
-      "Ooltha",
-      "Peye",
-      "Pharoma",
-      "Plague Akwin",
-      "Rahn Prism",
-      "Raplak Prism",
-      "Shwaak Prism",
-      "Venato"
+      "Pharoma"
     ],
     "patchlogs": [
       {
@@ -6258,12 +5929,8 @@
     "consumeOnBuild": false,
     "description": "A self-replicating fluid comprised of nanoproxies capable of independently repairing worn and damaged systems.\n\nLocation: Railjack missions in Venus, Neptune, and Pluto Proximas",
     "imageName": "isos-45a359ffea.png",
-    "itemCount": 450,
     "masterable": false,
     "name": "Isos",
-    "parents": [
-      "Basmu"
-    ],
     "patchlogs": [
       {
         "name": "Update 29.10.0: Corpus Proxima & The New Railjack",
@@ -6291,12 +5958,8 @@
     "category": "Resources",
     "description": "Used in the construction of Javloks",
     "imageName": "javlok-capacitor-07b498f28c.png",
-    "itemCount": 6,
     "masterable": false,
     "name": "Javlok Capacitor",
-    "parents": [
-      "Javlok"
-    ],
     "patchlogs": [
       {
         "name": "Echoes of the Zariman: Update 31.6",
@@ -6449,12 +6112,8 @@
     "consumeOnBuild": false,
     "description": "A component used in secure Grineer communication networks.\n\nLocation: Railjack missions in Earth, Saturn, and Veil Proximas",
     "imageName": "komms-4c39bebf94.png",
-    "itemCount": 4,
     "masterable": false,
     "name": "Komms",
-    "parents": [
-      "Protea Telema Helmet"
-    ],
     "patchlogs": [
       {
         "name": "Update 29.10.0: Corpus Proxima & The New Railjack",
@@ -6526,14 +6185,8 @@
       }
     ],
     "imageName": "kovnik-22576fccbe.png",
-    "itemCount": 100,
     "masterable": false,
     "name": "Kovnik",
-    "parents": [
-      "Argo & Vel",
-      "Sampotes",
-      "Sun & Moon"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemA"
@@ -6592,19 +6245,8 @@
       }
     ],
     "imageName": "kuaka-spinal-claw-5a450e1714.png",
-    "itemCount": 5,
     "masterable": false,
     "name": "Kuaka Spinal Claw",
-    "parents": [
-      "Ruhang",
-      "Ruhang Ii",
-      "Vargeet Ii Jai",
-      "Vargeet Ii Ruhang",
-      "Vargeet Jai",
-      "Vargeet Jai Ii",
-      "Vargeet Ruhang",
-      "Vargeet Ruhang Ii"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Eidolon/Resources/ForestRodentPartItem"
@@ -6687,12 +6329,8 @@
       }
     ],
     "imageName": "lamentus-e0b74d6c8b.png",
-    "itemCount": 40,
     "masterable": false,
     "name": "Lamentus",
-    "parents": [
-      "Sun & Moon"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriEnemyDropItem"
@@ -6790,14 +6428,8 @@
       }
     ],
     "imageName": "lua-thrax-plasm-588b2993b7.png",
-    "itemCount": 50,
     "masterable": false,
     "name": "Lua Thrax Plasm",
-    "parents": [
-      "Perigale",
-      "Sarofang",
-      "Voruna"
-    ],
     "patchlogs": [
       {
         "name": "Lua’s Prey: Hotfix 32.2.4",
@@ -6878,7 +6510,6 @@
     "masterable": false,
     "name": "Lunar Pitcher",
     "parents": [
-      "Seeding Step Ephemera",
       "Twilight Apothic"
     ],
     "patchlogs": [
@@ -7001,22 +6632,16 @@
       }
     ],
     "imageName": "maprico-35a9f7f622.png",
-    "itemCount": 2,
+    "itemCount": 15,
     "masterable": false,
     "name": "Maprico",
     "parents": [
       "Cuthol Bait",
-      "Dehtat",
-      "Ekwana Ii Jai",
-      "Ekwana Ii Ruhang",
       "Fosfor Blau",
       "Fosfor Rahd",
       "Glappid Bait",
-      "Jayap",
       "Norg Bait",
       "Twilight Bait",
-      "Vargeet Ii Jai",
-      "Vargeet Ii Ruhang",
       "Vasca Curative"
     ],
     "patchlogs": [
@@ -7089,24 +6714,12 @@
     "consumeOnBuild": false,
     "description": "Polished and cut to perfection.\n\nBlueprint sold by Old Man Suumbaat in Cetus on Earth.",
     "imageName": "marquise-veridos-217877dacf.png",
-    "itemCount": 10,
+    "itemCount": 2,
     "masterable": false,
     "name": "Marquise Veridos",
     "parents": [
       "Advanced Nosam Cutter",
-      "Cyath",
-      "Dehtat",
-      "Dokrahm",
-      "Flutterfire",
-      "Granmu Prism",
-      "Loid Sentinel Mask",
-      "Loid Sentinel Skin",
-      "Loid Sentinel Tail",
-      "Loid Sentinel Wing",
-      "Mewan",
-      "Shwaak Prism",
-      "Sunpoint Plasma Drill",
-      "Vulcax"
+      "Sunpoint Plasma Drill"
     ],
     "patchlogs": [
       {
@@ -7237,7 +6850,7 @@
     "category": "Resources",
     "description": "This uncommon plant can only be found at night. \n\nLocation: Obtained by gathering Moonlight Dragonlily plants that grow on Earth",
     "imageName": "moonlight-dragonlily-1d96fd8309.png",
-    "itemCount": 6,
+    "itemCount": 10,
     "masterable": false,
     "name": "Moonlight Dragonlily",
     "parents": [
@@ -7352,12 +6965,8 @@
     "description": "A Necramech weapon-crafting component.",
     "excludeFromCodex": true,
     "imageName": "morgha-barrel.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Morgha Barrel",
-    "parents": [
-      "Morgha"
-    ],
     "skipBuildTimePrice": 5,
     "tradable": false,
     "type": "Resource",
@@ -7431,12 +7040,8 @@
     "description": "A Necramech weapon-crafting component.",
     "excludeFromCodex": true,
     "imageName": "morgha-receiver.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Morgha Receiver",
-    "parents": [
-      "Morgha"
-    ],
     "skipBuildTimePrice": 5,
     "tradable": false,
     "type": "Resource",
@@ -7511,12 +7116,8 @@
     "description": "A Necramech weapon-crafting component.",
     "excludeFromCodex": true,
     "imageName": "morgha-stock.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Morgha Stock",
-    "parents": [
-      "Morgha"
-    ],
     "skipBuildTimePrice": 5,
     "tradable": false,
     "type": "Resource",
@@ -7637,30 +7238,11 @@
     "consumeOnBuild": true,
     "description": "This living mass can produce weaponized toxins for weaponry.\n\nLocation: Clan Research (Bio Lab in the Dojo) and Infested Outbreak Invasion Rewards",
     "imageName": "mutagen-mass-17e29a3c73.png",
-    "itemCount": 5,
+    "itemCount": 6,
     "masterable": false,
     "name": "Mutagen Mass",
     "parents": [
-      "Acrid",
-      "Bubonico",
-      "Catabolyst",
-      "Caustacyst",
-      "Cerata",
-      "Dark Split-Sword",
-      "Djinn",
-      "Dual Ichor",
-      "Dual Toxocyst",
-      "Embolist",
-      "Hema",
-      "Mios",
-      "Mutalist Quanta",
-      "Paracyst",
-      "Phage",
-      "Pox",
-      "Pupacyst",
-      "Scoliac",
-      "Synapse",
-      "Torid"
+      "Djinn"
     ],
     "patchlogs": [
       {
@@ -7797,24 +7379,8 @@
       }
     ],
     "imageName": "mytocardia-spore-a69a9e3d86.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Mytocardia Spore",
-    "parents": [
-      "Catchmoon",
-      "Deepbreath",
-      "Drimper Bracket",
-      "Fatboys",
-      "Hang Tenno",
-      "Harpen Gyro",
-      "Hona Bracket",
-      "Kreska",
-      "Munit Gyro",
-      "Para Moa",
-      "Step Tens",
-      "Thugs",
-      "Twin Kavats"
-    ],
     "patchlogs": [
       {
         "name": "Fortuna: The Profit-Taker - Update 24.2",
@@ -7903,14 +7469,8 @@
       }
     ],
     "imageName": "necracoil-8a46854da0.png",
-    "itemCount": 50,
     "masterable": false,
     "name": "Necracoil",
-    "parents": [
-      "Ekhein",
-      "Grimoire",
-      "Onos"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/EntratiLab/Resources/EntratiLabMiscItemB"
@@ -8027,28 +7587,17 @@
       }
     ],
     "imageName": "nistlepod-d533e543eb.png",
-    "itemCount": 25,
+    "itemCount": 15,
     "masterable": false,
     "name": "Nistlepod",
     "parents": [
-      "Balla",
-      "Dokrahm",
-      "Ekwana Jai",
-      "Ekwana Ruhang",
-      "Jai",
-      "Jai Ii",
-      "Laka",
       "Lanzo Fishing Spear",
       "Peppered Bait",
       "Peram Fishing Spear",
-      "Ruhang",
-      "Ruhang Ii",
       "Shockprod Fishing Spear",
       "Stunna Fishing Spear",
       "Tulok Fishing Spear",
       "Twilight Bait",
-      "Vargeet Jai",
-      "Vargeet Ruhang",
       "Vasca Curative"
     ],
     "patchlogs": [
@@ -8349,13 +7898,11 @@
       }
     ],
     "imageName": "nullstones-bcb7543ba8.png",
-    "itemCount": 1,
+    "itemCount": 5,
     "masterable": false,
     "name": "Nullstones",
     "parents": [
-      "Basmu",
-      "Nautilus",
-      "Protea Mavv Helmet"
+      "Nautilus"
     ],
     "patchlogs": [
       {
@@ -9123,13 +8670,8 @@
     "category": "Resources",
     "description": "The manifestation of Thrax's malevolence that shapes the Orowyrms' outbursts.\n\nLocation: Rewarded upon defeating the Orowyrm in Duviri ",
     "imageName": "pathos-clamp-9b4e5eca68.png",
-    "itemCount": 10,
     "masterable": false,
     "name": "Pathos Clamp",
-    "parents": [
-      "Kullervo",
-      "Rauta"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriDragonDropItem"
@@ -9285,24 +8827,8 @@
       }
     ],
     "imageName": "pustulite-d8e1460ba7.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Pustulite",
-    "parents": [
-      "Adra Mutagen",
-      "Arioli Mutagen",
-      "Chiten Mutagen",
-      "Elsa Mutagen",
-      "Gristlebuck",
-      "Leptosam Mutagen",
-      "Macro Thymoid",
-      "Monachod Mutagen",
-      "Phijar Mutagen",
-      "Sporelacer",
-      "Steeba",
-      "Thymoid",
-      "Zarim Mutagen"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/InfestedMicroplanet/Resources/InfGorgaricusSeedItem"
@@ -9432,14 +8958,6 @@
     "masterable": false,
     "name": "Radian Sentirum",
     "parents": [
-      "Anspatha Brace",
-      "Ceno Apparel",
-      "Ceno Cuirass",
-      "Ceno Greaves",
-      "Ceno Helmet",
-      "Ceno Pauldrons",
-      "Dorma Hound",
-      "Eidolon Ephemera",
       "Exceptional Sentient Core"
     ],
     "patchlogs": [
@@ -9570,15 +9088,8 @@
       }
     ],
     "imageName": "repeller-systems-0ba6d9578c.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Repeller Systems",
-    "parents": [
-      "Certus Brace",
-      "Exergis",
-      "Plaga Brace",
-      "Suo Brace"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -9662,18 +9173,8 @@
       }
     ],
     "imageName": "rune-marrow-d8e84c9ef1.png",
-    "itemCount": 35,
     "masterable": false,
     "name": "Rune Marrow",
-    "parents": [
-      "Argo & Vel",
-      "Azothane",
-      "Edun",
-      "Sampotes",
-      "Sun & Moon",
-      "Syam",
-      "Thalys"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriFractalItem"
@@ -9726,12 +9227,8 @@
       }
     ],
     "imageName": "saggen-pearl-ea8b012149.png",
-    "itemCount": 100,
     "masterable": false,
     "name": "Saggen Pearl",
-    "parents": [
-      "Azothane"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriProcessedItem"
@@ -9890,17 +9387,7 @@
     "masterable": false,
     "name": "Scintillant",
     "parents": [
-      "Arcroid",
-      "Bonewidow Capsule",
-      "Catabolyst",
-      "Loid Sentinel Mask",
-      "Loid Sentinel Skin",
-      "Loid Sentinel Tail",
-      "Loid Sentinel Wing",
-      "Macro Arcroid",
-      "Macro Thymoid",
-      "Quassus",
-      "Thymoid"
+      "Bonewidow Capsule"
     ],
     "patchlogs": [
       {
@@ -10136,14 +9623,8 @@
       }
     ],
     "imageName": "seriglass-shard-3317de0afe.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Seriglass Shard",
-    "parents": [
-      "Quassus",
-      "Sepulcrum",
-      "Trumna"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Items/Deimos/SeriglassShard"
@@ -10282,7 +9763,6 @@
     "masterable": false,
     "name": "Shrill Voca",
     "parents": [
-      "Ekhein",
       "Jahu Gargoyle"
     ],
     "tradable": false,
@@ -10293,15 +9773,8 @@
     "category": "Resources",
     "description": "It is traditionally held that to see Silphsela floating in the air heralds an imminent change in the sky.\n\nLocation: Duviri",
     "imageName": "silphsela-9febfd01fc.png",
-    "itemCount": 45,
     "masterable": false,
     "name": "Silphsela",
-    "parents": [
-      "Argo & Vel",
-      "Sampotes",
-      "Sun & Moon",
-      "Thalys"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemE"
@@ -10352,21 +9825,8 @@
       }
     ],
     "imageName": "sola-toroid-54f209afd3.png",
-    "itemCount": 3,
     "masterable": false,
     "name": "Sola Toroid",
-    "parents": [
-      "Cela Bracket",
-      "Certus Brace",
-      "Haztech Greaves",
-      "Kubrodon Ventkid Greaves",
-      "Outrider Greaves",
-      "Plaga Brace",
-      "Smelter Greaves",
-      "Suo Brace",
-      "Vent Pobber Ventkid Greaves",
-      "Vent Rat Greaves"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -10475,11 +9935,7 @@
     "masterable": false,
     "name": "Star Crimzian",
     "parents": [
-      "Bonewidow Capsule",
-      "Granmu Prism",
-      "Helstrum",
-      "Ramflare",
-      "Styanax Agogean Helmet"
+      "Bonewidow Capsule"
     ],
     "patchlogs": [
       {
@@ -10825,7 +10281,7 @@
     "category": "Resources",
     "description": "This uncommon plant can only be found during the day. \n\nLocation: Obtained by gathering Sunlight Dragonlily plants that grow on Earth",
     "imageName": "sunlight-dragonlily-aaeb487cc1.png",
-    "itemCount": 4,
+    "itemCount": 10,
     "masterable": false,
     "name": "Sunlight Dragonlily",
     "parents": [
@@ -10876,12 +10332,8 @@
     "category": "Resources",
     "description": "Duviri citizens plagued by nightmares seek Tasoma, because its stalks can be crushed to create juice that invites pleasant dreams. Unfortunately, it is difficult to forage Tasoma as it only grows in caves.\n\nLocation: Duviri",
     "imageName": "tasoma-extract-eee6d95c49.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Tasoma Extract",
-    "parents": [
-      "Edun"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriMushroomItem"
@@ -10927,18 +10379,11 @@
     "consumeOnBuild": false,
     "description": "Polished and cut to perfection.\n\nBlueprint sold by Old Man Suumbaat in Cetus on Earth.",
     "imageName": "tear-azurite-397c0a4ebc.png",
-    "itemCount": 10,
+    "itemCount": 1,
     "masterable": false,
     "name": "Tear Azurite",
     "parents": [
-      "Balla",
-      "Focused Nosam Cutter",
-      "Ooltha",
-      "Plague Kripath",
-      "Rahn Prism",
-      "Raplak Prism",
-      "Sepfahn",
-      "Zipfire"
+      "Focused Nosam Cutter"
     ],
     "patchlogs": [
       {
@@ -11014,12 +10459,8 @@
       }
     ],
     "imageName": "techrot-chitin-369d38a5d1.png",
-    "itemCount": 25,
     "masterable": false,
     "name": "Techrot Chitin",
-    "parents": [
-      "Ax-52"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/1999Wf/Resources/1999ResourceUncommonA"
@@ -11054,12 +10495,8 @@
       }
     ],
     "imageName": "techrot-motherboard-849b636c51.png",
-    "itemCount": 5,
     "masterable": false,
     "name": "Techrot Motherboard",
-    "parents": [
-      "Ax-52"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/1999Wf/Resources/1999ResourceRareA"
@@ -11131,11 +10568,7 @@
     "parents": [
       "Bonewidow Casing",
       "Cortege Stock",
-      "Gristlebuck",
       "Morgha Stock",
-      "Ulnaris",
-      "Vermisplicer",
-      "Vitrica",
       "Voidrig Engine"
     ],
     "patchlogs": [
@@ -11179,12 +10612,8 @@
       }
     ],
     "imageName": "temporal-dust-61196e77bb.png",
-    "itemCount": 100,
     "masterable": false,
     "name": "Temporal Dust",
-    "parents": [
-      "Thalys"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/DuviriMITW/Resources/DuviriMurmurItemA"
@@ -11249,22 +10678,8 @@
       }
     ],
     "imageName": "tepa-nodule-2436cf005f.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Tepa Nodule",
-    "parents": [
-      "Arc Twelve",
-      "Atheca Gyro",
-      "Battacor",
-      "Coldfusor",
-      "Gauth Bracket",
-      "Gaze",
-      "Highbrow",
-      "Hothead",
-      "Jonsin Bracket",
-      "Tian Bracket",
-      "Zip"
-    ],
     "patchlogs": [
       {
         "name": "Fortuna: The Profit-Taker - Update 24.2",
@@ -11363,8 +10778,7 @@
     "masterable": false,
     "name": "Thaumic Distillate",
     "parents": [
-      "Bonewidow Casing",
-      "Wanz Stabilizer"
+      "Bonewidow Casing"
     ],
     "patchlogs": [
       {
@@ -11485,26 +10899,8 @@
       }
     ],
     "imageName": "thermal-sludge-b861a393ca.png",
-    "itemCount": 20,
     "masterable": false,
     "name": "Thermal Sludge",
-    "parents": [
-      "Aegron Gyro",
-      "Bad Baby",
-      "Bellows",
-      "Drimper Bracket",
-      "Flatbelly",
-      "Greedy Milk",
-      "Needlenose",
-      "Ocucor",
-      "Oloro Moa",
-      "Puppeteer",
-      "Runway",
-      "Tombfinger",
-      "Trux Gyro",
-      "Tyli Gyro",
-      "Urga Bracket"
-    ],
     "patchlogs": [
       {
         "name": "Echoes of War: Banshee & Mirage Prime Vault: Hotfix 31.1.3",
@@ -11589,20 +10985,8 @@
       }
     ],
     "imageName": "thrax-plasm-acf664e015.png",
-    "itemCount": 600,
     "masterable": false,
     "name": "Thrax Plasm",
-    "parents": [
-      "Aeolak",
-      "Alternox",
-      "Gyre Automaton Helmet",
-      "Hespar",
-      "Innodem",
-      "Praedos",
-      "Raptwing Ephemera",
-      "Seraphayre Ephemera",
-      "Styanax Gerousic Helmet"
-    ],
     "patchlogs": [
       {
         "name": "Lua’s Prey: Hotfix 32.2.4",
@@ -12492,9 +11876,7 @@
     "masterable": false,
     "name": "Titanium",
     "parents": [
-      "Basmu",
-      "Bonewidow Engine",
-      "Protea Mavv Helmet"
+      "Bonewidow Engine"
     ],
     "patchlogs": [
       {
@@ -12759,23 +12141,7 @@
     "masterable": false,
     "name": "Travocyte Alloy",
     "parents": [
-      "Alcrom Core",
-      "Catchmoon",
-      "Cela Bracket",
-      "Coldfusor",
-      "Deepbreath",
-      "Drex Core",
-      "Drimper Bracket",
-      "Haymaker",
-      "Lovetap",
-      "Oloro Moa",
-      "Shrewd",
-      "Slap",
-      "Steadyslam",
-      "Sunpoint Plasma Drill",
-      "Tian Bracket",
-      "Twin Kavats",
-      "Zubb Bracket"
+      "Sunpoint Plasma Drill"
     ],
     "skipBuildTimePrice": 5,
     "tradable": false,
@@ -12903,21 +12269,8 @@
       }
     ],
     "imageName": "vega-toroid-31d48d6576.png",
-    "itemCount": 3,
     "masterable": false,
     "name": "Vega Toroid",
-    "parents": [
-      "Cantic Prism",
-      "Haztech Pauldrons",
-      "Klamora Prism",
-      "Kubrodon Ventkid Pauldrons",
-      "Lega Prism",
-      "Outrider Pauldrons",
-      "Smelter Pauldrons",
-      "Vent Pobber Ventkid Pauldrons",
-      "Vent Rat Pauldrons",
-      "Zubb Bracket"
-    ],
     "patchlogs": [
       {
         "name": "Update 31: The New War",
@@ -13016,44 +12369,8 @@
     "consumeOnBuild": false,
     "description": "A compound formed from Venerol.\n\nBlueprint sold by Smokefinger in Fortuna on Venus.",
     "imageName": "venerdo-alloy-0699ce0e35.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Venerdo Alloy",
-    "parents": [
-      "Adlet Core",
-      "Arc Twelve",
-      "Bashrack",
-      "Flatbelly",
-      "Gauth Bracket",
-      "Gaze",
-      "Haztech Apparel",
-      "Haztech Cuirass",
-      "Haztech Pauldrons",
-      "Hona Bracket",
-      "Krisys Core",
-      "Kubrodon Ventkid Apparel",
-      "Kubrodon Ventkid Cuirass",
-      "Kubrodon Ventkid Pauldrons",
-      "Lambeo Moa",
-      "Larkspur",
-      "Lehan Core",
-      "Nychus Moa",
-      "Ocucor",
-      "Outrider Cuirass",
-      "Outrider Pauldrons",
-      "Rattleguts",
-      "Smelter Apparel",
-      "Smelter Cuirass",
-      "Smelter Pauldrons",
-      "Sparkfire",
-      "Step Tens",
-      "Thugs",
-      "Vent Pobber Ventkid Apparel",
-      "Vent Pobber Ventkid Cuirass",
-      "Vent Pobber Ventkid Pauldrons",
-      "Vent Rat Cuirass",
-      "Vent Rat Pauldrons"
-    ],
     "patchlogs": [
       {
         "name": "Update 30.9.0: Prime Resurgence",
@@ -13276,16 +12593,8 @@
       }
     ],
     "imageName": "voidgel-orb-479e1ce26c.png",
-    "itemCount": 30,
     "masterable": false,
     "name": "Voidgel Orb",
-    "parents": [
-      "Felarx",
-      "Gyre Automaton Helmet",
-      "Laetum",
-      "Raptwing Ephemera",
-      "Seraphayre Ephemera"
-    ],
     "patchlogs": [
       {
         "name": "Update 31.5: Angels of the Zariman",
@@ -13368,18 +12677,8 @@
     "category": "Resources",
     "description": "A Void Angel's living feather, ripped out in combat.\n\nLocation: Zariman",
     "imageName": "voidplume-pinion-ddb17aa071.png",
-    "itemCount": 10,
     "masterable": false,
     "name": "Voidplume Pinion",
-    "parents": [
-      "Felarx",
-      "Innodem",
-      "Laetum",
-      "Phenmor",
-      "Praedos",
-      "Raptwing Ephemera",
-      "Seraphayre Ephemera"
-    ],
     "patchlogs": [
       {
         "name": "Angels of the Zariman: Hotfix 31.5.4",
@@ -13406,16 +12705,8 @@
     "category": "Resources",
     "description": "A symbol of genius, fallen from Void Angels long ago.\n\nLocation: Zariman",
     "imageName": "voidplume-quill-940b97d70f.png",
-    "itemCount": 15,
     "masterable": false,
     "name": "Voidplume Quill",
-    "parents": [
-      "Felarx",
-      "Innodem",
-      "Laetum",
-      "Phenmor",
-      "Praedos"
-    ],
     "patchlogs": [
       {
         "name": "Echoes of the Zariman: Update 31.6",
@@ -13534,12 +12825,8 @@
     "consumeOnBuild": true,
     "description": "Capsule component for the Voidrig Necramech.",
     "imageName": "voidrig-capsule.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Voidrig Capsule",
-    "parents": [
-      "Voidrig"
-    ],
     "patchlogs": [
       {
         "name": "Update 31.5: Angels of the Zariman",
@@ -13630,12 +12917,8 @@
     "consumeOnBuild": true,
     "description": "Casing component for the Voidrig Necramech.",
     "imageName": "voidrig-casing.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Voidrig Casing",
-    "parents": [
-      "Voidrig"
-    ],
     "patchlogs": [
       {
         "name": "Update 31.5: Angels of the Zariman",
@@ -13727,12 +13010,8 @@
     "consumeOnBuild": true,
     "description": "Engine component for the Voidrig Necramech.",
     "imageName": "voidrig-engine.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Voidrig Engine",
-    "parents": [
-      "Voidrig"
-    ],
     "patchlogs": [
       {
         "name": "Update 31.5: Angels of the Zariman",
@@ -13823,12 +13102,8 @@
     "consumeOnBuild": true,
     "description": "Weapon Pod component for the Voidrig Necramech.",
     "imageName": "voidrig-weapon-pod.png",
-    "itemCount": 1,
     "masterable": false,
     "name": "Voidrig Weapon Pod",
-    "parents": [
-      "Voidrig"
-    ],
     "patchlogs": [
       {
         "name": "Update 30.9.0: Prime Resurgence",
@@ -13928,12 +13203,8 @@
       }
     ],
     "imageName": "yao-shrub-ca7169aa7e.png",
-    "itemCount": 40,
     "masterable": false,
     "name": "Yao Shrub",
-    "parents": [
-      "Azothane"
-    ],
     "tradable": false,
     "type": "Resource",
     "uniqueName": "/Lotus/Types/Gameplay/Duviri/Resource/DuviriPlantItemD"
